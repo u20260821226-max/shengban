@@ -1,0 +1,25 @@
+/* Local additions keep the original visual language and give real scores room. */
+[hidden]{display:none!important}
+.library-count{font-size:12px;color:var(--ink-soft)}
+.score-row{cursor:pointer}
+.score-paper{height:auto;min-height:480px;max-height:76vh;overflow:auto;padding:25px 18px;scrollbar-gutter:stable}
+.paper-top{margin:0 5px 12px;position:sticky;top:-25px;z-index:1;background:var(--paper);padding:12px 0;border-bottom:1px solid var(--line)}
+#score-container{width:100%;min-width:0;background:white;border-radius:3px}
+#score-container svg{display:block;max-width:100%}
+.preview-caption,.control-note,.position-label{font-size:12px;line-height:1.7;color:var(--ink-soft)}
+.position-label{text-align:center;margin-top:-12px;margin-bottom:18px;font-family:'DM Mono',monospace}
+.control-deck{position:sticky;top:18px}
+.practice-grid{grid-template-columns:minmax(0,1.3fr) minmax(285px,.7fr);gap:24px}
+.practice-tools{margin-top:12px}
+.control-note{margin:8px 0}
+.deck-section>input[type=range]{width:100%}
+.count-button{padding:10px;width:100%;border:1px solid var(--line);border-radius:5px;font-size:12px;color:var(--ink-soft);margin-top:8px}
+.count-button.active{background:var(--moss-light);border-color:var(--moss)}
+.backup-panel{border-top:1px solid var(--line);margin-top:20px;padding-top:14px;font-size:12px;color:var(--ink-soft)}
+.backup-panel summary{cursor:pointer}
+.backup-panel p{line-height:1.6}
+.backup-panel audio{display:block;width:100%;margin-top:10px;height:36px}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid var(--orange);outline-offset:4px}
+@media(max-width:1100px){.practice-grid{grid-template-columns:minmax(0,1fr)}.control-deck{position:static}.score-paper{max-height:65vh}}
+@media(max-width:820px){.score-paper{padding:18px 8px;min-height:260px;max-height:50vh}.paper-top{top:-18px}.piece-heading h1{font-size:30px}.control-deck{padding:22px}.track-tab{min-height:38px}.score-main p:last-child{max-width:190px}.sidebar{position:absolute}.practice-head{gap:20px}}

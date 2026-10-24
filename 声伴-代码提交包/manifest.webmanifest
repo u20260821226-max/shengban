@@ -1,0 +1,10 @@
+{
+  "name": "声伴 · 声乐练习伴奏",
+  "short_name": "声伴",
+  "description": "把钢琴伴奏五线谱变成适合声乐练习的伴奏。",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4f2eb",
+  "theme_color": "#17211e",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

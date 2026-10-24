@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#17211e" />
+    <title>声伴 · 声乐练习伴奏</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="practice.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="主导航">
+        <a href="#" class="brand" aria-label="声伴首页"><span class="brand-mark">♪</span><span>声伴</span></a>
+        <nav>
+          <button class="nav-item active" data-view="library"><span>▦</span>我的曲目</button>
+          <button class="nav-item" data-view="practice"><span>◉</span>正在练习</button>
+        </nav>
+        <div class="sidebar-bottom">
+          <button class="copyright-link" id="show-rights">版权与使用说明 ↗</button>
+          <div class="user"><span class="avatar">林</span><span><b>林予安</b><small>声乐生</small></span><button aria-label="账户菜单">⌄</button></div>
+        </div>
+      </aside>
+
+      <main>
+        <header class="topbar">
+          <button class="back-button" data-view="library">我的曲目</button>
+          <div class="crumb">我的曲目 <span>/</span> 练习曲库</div>
+          <button class="new-score" data-import><span>＋</span> 导入新乐谱</button>
+        </header>
+
+        <section class="view active" id="library-view" aria-labelledby="library-title">
+          <div class="library-heading">
+            <div><p class="eyebrow">我的曲目</p><h1 id="library-title">今天，从一页乐谱开始。</h1><p class="subcopy">选择曲目，调到适合你的音高与速度。</p></div>
+            
+          </div>
+          <div class="search-row"><label class="search"><span>⌕</span><input id="song-search" aria-label="搜索曲目" placeholder="搜索曲目" /></label><span class="library-count">3 首演示曲目</span></div>
+          <div class="score-list" id="songs" aria-label="曲目列表"></div>
+          <p id="empty-library" hidden>没有找到曲目，请换个名字试试。</p>
+          <button class="import-banner" data-import><span class="upload-glyph">↥</span><span><b>还想练一首新曲子？</b><small>导入钢琴伴奏五线谱</small></span><strong>→</strong></button>
+        </section>
+
+        <section class="view" id="practice-view" aria-labelledby="practice-title">
+          <div class="practice-head"><button class="back-button" data-view="library">← <span>曲目库</span></button><button class="back-button" id="restart">回到开头 ↶</button></div>
+          <div class="piece-heading"><div class="piece-index">01</div><div><p class="eyebrow">钢琴伴奏练习</p><h1 id="practice-title">爱永在</h1><p id="practice-subtitle">16 小节 · 比赛演示曲目</p></div><div class="saved"><span>✓</span> 已保存</div></div>
+          <div class="practice-grid">
+            <section class="score-paper" aria-label="曲目五线谱">
+              <div class="paper-top"><span id="score-title">爱永在</span><span id="score-key-label">原调</span></div>
+              <p id="score-message" role="status">请从曲库选择曲目</p>
+              <div id="score-container" aria-label="完整乐谱"></div>
+              <p class="preview-caption">谱面保留全部声部；“纯伴奏”只播放钢琴双手声部。</p>
+            </section>
+            <aside class="control-deck">
+              <div class="track-tabs" role="tablist"><button class="track-tab active" data-track="accompaniment" role="tab" aria-selected="true">纯伴奏</button><button class="track-tab" data-track="melody" role="tab" aria-selected="false">旋律提示</button></div>
+              <p class="track-description" id="track-description">只播放下面两行钢琴伴奏，关闭最上方主旋律。</p>
+              <div class="transport"><button id="prev" aria-label="上一小节">↶</button><button class="main-play" id="main-play" aria-label="播放">▶</button><button id="next" aria-label="下一小节">↷</button></div>
+              <div class="timeline"><span id="elapsed">00:00</span><input id="progress" aria-label="播放进度" type="range" step="0.01" min="0" max="100" value="0" /><span id="duration">00:00</span></div>
+              <p id="position-label" class="position-label">准备乐谱</p><div class="deck-section"><div class="deck-label"><span>练习速度</span><b id="tempo-readout">120 BPM</b></div><input id="tempo" aria-label="练习速度：60 至 160 BPM" type="range" min="60" max="160" step="1" value="120" /><div class="tempo-limits"><span>60</span><span>160 BPM</span></div></div>
+              <div class="deck-section key-section"><div class="deck-label"><span>练习调性</span><b id="key-readout">原调</b></div><div class="key-control"><button id="key-down" aria-label="降半音">−</button><span id="semitone">0</span><button id="key-up" aria-label="升半音">＋</button></div></div>
+              <div class="practice-tools"><button id="loop-a">设置 A 点</button><button id="loop-b" disabled>设置 B 点</button></div>
+              <p id="loop-status" class="control-note">选择播放位置，设置循环起止点</p>
+              <button id="loop-clear" class="text-button" hidden>清除循环</button>
+              <button id="count-toggle" class="count-button" aria-pressed="false">播放前倒数 4 拍</button>
+              <details class="backup-panel"><summary>备用录音</summary><p id="backup-note">保持原调、原速；上方播放器支持移调与调速。</p><audio id="backup-audio" controls preload="none" aria-label="备用录音"></audio></details>
+            </aside>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="import-dialog" aria-labelledby="import-title"><button class="modal-close" data-close aria-label="关闭">×</button><p class="eyebrow">导入乐谱</p><h2 id="import-title">先准备好你的乐谱</h2><p>当前演示可播放《爱永在》《小幸运》和《有一种悲伤》。新曲目需要先识谱、校对，再加入曲库；图片自动识谱尚未接通。</p><button class="primary-button" data-close>返回曲库</button></dialog>
+    <dialog id="rights-dialog"><button class="modal-close" data-close aria-label="关闭">×</button><p class="eyebrow">使用说明</p><h2>仅使用你有权练习的乐谱</h2><p>当前原型不会上传或保存图片。正式服务接入后，乐谱处理方式与保存期限会在上传前说明。</p><button class="primary-button" data-close>我知道了</button></dialog>
+    <div class="toast" id="toast" role="status"></div>
+    <script src="vendor/opensheetmusicdisplay.min.js"></script>
+    <script type="module" src="practice-app.js"></script>
+  </body>
+</html>
