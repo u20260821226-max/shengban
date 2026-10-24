@@ -23,3 +23,14 @@ button:disabled{opacity:.45;cursor:not-allowed}
 button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid var(--orange);outline-offset:4px}
 @media(max-width:1100px){.practice-grid{grid-template-columns:minmax(0,1fr)}.control-deck{position:static}.score-paper{max-height:65vh}}
 @media(max-width:820px){.score-paper{padding:18px 8px;min-height:260px;max-height:50vh}.paper-top{top:-18px}.piece-heading h1{font-size:30px}.control-deck{padding:22px}.track-tab{min-height:38px}.score-main p:last-child{max-width:190px}.sidebar{position:absolute}.practice-head{gap:20px}}
+
+/* Keep reading controls visible outside the score's scrollable viewport. */
+.score-paper{min-height:0;max-height:none;overflow:visible}
+.paper-top{position:static;display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:0;padding:0 0 12px}
+.paper-top>span:first-child{margin-right:auto}
+#score-expand{border:1px solid var(--line);border-radius:5px;padding:8px 12px;min-height:44px;font-size:12px;background:#fffefb;white-space:nowrap}
+#score-expand[aria-expanded=true]{background:var(--moss-light);border-color:var(--moss)}
+.score-reading-hint{font-size:12px;line-height:1.6;color:var(--ink-soft);margin:10px 0}
+.score-scroll{max-height:65vh;overflow:auto;scrollbar-gutter:stable;-webkit-overflow-scrolling:touch}
+.score-paper.is-expanded .score-scroll{max-height:none;overflow:visible;scrollbar-gutter:auto}
+@media(max-width:820px){.score-paper{height:auto;min-height:0;max-height:none}.score-scroll{max-height:46vh}.paper-top{gap:8px}.score-paper .preview-caption{margin-bottom:0}}

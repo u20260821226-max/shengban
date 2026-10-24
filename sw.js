@@ -1,4 +1,4 @@
-const CACHE = 'shengban-v7-three-scores';
+const CACHE = 'shengban-v8-score-reading';
 self.addEventListener('install', event => event.waitUntil((async () => {
   const response = await fetch('./asset-list.json', { cache: 'no-store' });
   const files = await response.json();

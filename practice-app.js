@@ -138,5 +138,13 @@ $('#song-search').addEventListener('input', renderLibrary);
 $('#show-rights').addEventListener('click', () => $('#rights-dialog').showModal());
 $$('[data-close]').forEach(button => button.addEventListener('click', () => button.closest('dialog').close()));
 $$('[data-import]').forEach(button => button.addEventListener('click', () => $('#import-dialog').showModal()));
+$('#score-expand').addEventListener('click', () => {
+  const expanded = $('.score-paper').classList.toggle('is-expanded');
+  $('#score-expand').setAttribute('aria-expanded', String(expanded));
+  $('#score-expand').textContent = expanded ? '收起全谱' : '展开全谱';
+  $('#score-reading-hint').textContent = expanded
+    ? '已展开全曲，向下滑动页面查看。'
+    : '谱内上下滑动可查看全曲，也可展开全谱。';
+});
 renderLibrary();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => showToast('离线缓存未启用，联网时仍可播放'));
+if ('serviceWorker'  in navigator) navigator.serviceWorker.register('./sw.js').catch(() => showToast('离线缓存未启用，联网时仍可播放'));

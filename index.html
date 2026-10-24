@@ -47,9 +47,12 @@
           <div class="piece-heading"><div class="piece-index">01</div><div><p class="eyebrow">钢琴伴奏练习</p><h1 id="practice-title">爱永在</h1><p id="practice-subtitle">16 小节 · 比赛演示曲目</p></div><div class="saved"><span>✓</span> 已保存</div></div>
           <div class="practice-grid">
             <section class="score-paper" aria-label="曲目五线谱">
-              <div class="paper-top"><span id="score-title">爱永在</span><span id="score-key-label">原调</span></div>
+              <div class="paper-top"><span id="score-title">爱永在</span><span id="score-key-label">原调</span><button id="score-expand" aria-expanded="false" aria-controls="score-scroll">展开全谱</button></div>
+              <p id="score-reading-hint" class="score-reading-hint">谱内上下滑动可查看全曲，也可展开全谱。</p>
+              <div id="score-scroll" class="score-scroll" tabindex="0" role="region" aria-label="乐谱滚动区域">
               <p id="score-message" role="status">请从曲库选择曲目</p>
               <div id="score-container" aria-label="完整乐谱"></div>
+              </div>
               <p class="preview-caption">谱面保留全部声部；“纯伴奏”只播放钢琴双手声部。</p>
             </section>
             <aside class="control-deck">
