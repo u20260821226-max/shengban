@@ -1,0 +1,19 @@
+47-83-177-119.sslip.io {
+    request_body {
+        max_size 64MB
+    }
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy same-origin
+        X-Frame-Options DENY
+    }
+    handle /api/* {
+        reverse_proxy 127.0.0.1:8000
+    }
+    handle {
+        root * /opt/shengban/site
+        @fresh path /recognition-config.json /sw.js /labs/*
+        header @fresh Cache-Control no-store
+        file_server
+    }
+}

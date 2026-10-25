@@ -20,10 +20,14 @@
 
 practice-app.js 管理页面；music-player.js 调度 MIDI 音符与钢琴采样；score-view.js 使用本地 OSMD 渲染 MusicXML；assets/scores/*.json 为 MIDI 预处理数据。旧原型文件已移至 archive/prototype/，当前网页未引用。
 
-MIDI 保留源文件中的速度变化，速度滑杆按比例缩放；不自动修复识谱错误。后台自动识谱、账户和上传仍未接通，导入入口明确说明需要预先校对。
+MIDI 保留源文件中的速度变化，速度滑杆按比例缩放；不自动修复识谱错误。另有本机自动识谱及云端试用服务，不要求用户预先校谱。云端部署进度、地址和边界见 [公网部署说明](docs/公网识谱部署.md)；旧账户骨架未接入当前网站。
 
 运行与演示说明见 DEMO_GUIDE.md。资源授权见 assets/ATTRIBUTION.md。
 
 ## 整理与提交
 
 双击 scripts/整理代码.command，生成 dist/ 下的网页发布包、代码提交包和资源校验清单。原始乐谱保持原位置。工程结构见 [代码说明](docs/代码说明.md)，交付方式见 [提交与验证](docs/提交与验证.md)。
+
+## 自动识谱本机测试
+
+双击“启动自动识谱测试.command”，打开 http://localhost:4175/ 。此入口已接入本机 Audiveris、灰度预处理、MusicXML 声部/节拍检查及现有钢琴播放器；与云端服务是不同入口。支持范围及已知限制见 [本机识谱说明](docs/自动识谱本机测试.md)。

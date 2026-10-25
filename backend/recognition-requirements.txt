@@ -1,0 +1,2 @@
+# Local test server uses Python's standard library plus image preprocessing.
+Pillow==11.3.0

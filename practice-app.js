@@ -8,6 +8,7 @@ const songs = [
 ];
 let selected = songs[0], songData, busy = false, ready = false, toastTimer;
 let countIn = false, loopStart = null, loopEnd = null;
+let recognitionSession = null, recognitionLoading = null;
 const scoreView = new ScoreView($('#score-container'));
 const player = new MusicPlayer(updatePlayer);
 const time = s => `${Math.floor(s / 60).toString().padStart(2, '0')}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
@@ -16,10 +17,12 @@ function showToast(message) {
   clearTimeout(toastTimer); toastTimer = setTimeout(() => $('#toast').classList.remove('show'), 4000);
 }
 function setView(view) {
+  if (view !== 'recognition' && location.hash.startsWith('#upload-')) history.replaceState(null, '', location.pathname + location.search);
   $$('.view').forEach(el => el.classList.toggle('active', el.id === `${view}-view`));
   $$('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.view === view));
-  $('.crumb').textContent = view === 'practice' ? `正在练习 / ${selected.title}` : '我的曲目 / 练习曲库';
-  if (view === 'library') { player.pause(); $('#backup-audio').pause(); }
+  $('.crumb').textContent = view === 'practice' ? `正在练习 / ${selected.title}` : view === 'recognition' ? '导入乐谱 / 自动识谱' : '我的曲目 / 练习曲库';
+  if (view !== 'practice') { player.pause(); $('#backup-audio').pause(); }
+  if (view !== 'recognition') recognitionSession?.pause();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 function updatePlayer(p) {
@@ -137,7 +140,37 @@ $$('[data-view]').forEach(button => button.addEventListener('click', () => {
 $('#song-search').addEventListener('input', renderLibrary);
 $('#show-rights').addEventListener('click', () => $('#rights-dialog').showModal());
 $$('[data-close]').forEach(button => button.addEventListener('click', () => button.closest('dialog').close()));
+let recognitionUrl = null;
+const configController = new AbortController();
+const configTimeout = setTimeout(() => configController.abort(), 5000);
+const recognitionReady = fetch('/recognition-config.json', { cache: 'no-store', signal: configController.signal }).then(response => response.ok ? response.json() : null).then(config => {
+  if (!config?.enabled) return;
+  const url = new URL(config.recognitionUrl, location.origin);
+  if (url.protocol === 'https:' || url.origin === location.origin) recognitionUrl = url.href;
+}).catch(() => {}).finally(() => clearTimeout(configTimeout));
+async function openRecognition(layout) {
+  await recognitionReady;
+  if (!recognitionUrl) { showToast('识谱服务暂未连接，请联网后重试。'); return; }
+  const target = new URL(recognitionUrl);
+  if (target.origin !== location.origin) { location.assign(target.origin + '/#upload-' + layout); return; }
+  try {
+    setView('recognition');
+    history.replaceState(null, '', '#upload-' + layout);
+    if (!recognitionSession) {
+      $('#recognition-host').textContent = '正在准备上传界面…';
+      recognitionLoading ||= import('./recognition-view.js').then(module => {
+        $('#recognition-host').textContent = '';
+        return module.mountRecognition($('#recognition-host'), layout);
+      });
+      recognitionSession = await recognitionLoading;
+    } else recognitionSession.setLayout(layout);
+  } catch (error) { recognitionLoading = null; showToast(error.message); setView('library'); }
+}
 $$('[data-import]').forEach(button => button.addEventListener('click', () => $('#import-dialog').showModal()));
+$$('[data-layout-choice]').forEach(button => button.addEventListener('click', () => {
+  $('#import-dialog').close(); openRecognition(button.dataset.layoutChoice);
+}));
+if (/^#upload-(piano|vocal)$/.test(location.hash)) openRecognition(location.hash.slice(8));
 $('#score-expand').addEventListener('click', () => {
   const expanded = $('.score-paper').classList.toggle('is-expanded');
   $('#score-expand').setAttribute('aria-expanded', String(expanded));

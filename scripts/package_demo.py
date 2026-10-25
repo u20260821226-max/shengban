@@ -11,6 +11,7 @@ DIST = ROOT / 'dist'
 def runtime_files():
     entries = json.loads((ROOT / 'asset-list.json').read_text())
     names = {'index.html', 'sw.js', 'asset-list.json',
+             'recognition-config.json', 'recognition-view.js',
              'assets/ATTRIBUTION.md', 'assets/piano/LICENSE.txt',
              'vendor/OSMD-LICENSE.txt'}
     for entry in entries:
@@ -23,6 +24,7 @@ def runtime_files():
     for name in names:
         if not (ROOT / name).is_file():
             raise ValueError(f'缺少文件：{name}')
+    names.update(p.relative_to(ROOT).as_posix() for p in (ROOT / 'labs').glob('recognition.*'))
     for path in (ROOT / 'assets/scores').glob('*.json'):
         data = json.loads(path.read_text())
         assert data['notes'] and data['measureTimes'], f'空乐谱：{path.name}'
@@ -45,6 +47,15 @@ def main():
     source.update(p.relative_to(ROOT).as_posix() for p in (ROOT / 'backend/app').glob('*.py'))
     source.update({'backend/README.md', 'backend/requirements.txt', 'backend/.env.example',
                    'PROVIDER_CONFIRMATION.md'})
+    source.update({'backend/local_recognition.py', 'backend/recognition-requirements.txt',
+                   'backend/public_api.py', 'backend/public_limits.py', 'backend/public_requirements.txt',
+                   '启动自动识谱测试.command'})
+    source.add('scripts/package_server.py')
+    source.add('scripts/package_update.py')
+    source.update(p.relative_to(ROOT).as_posix() for p in (ROOT / 'deploy').glob('*') if p.is_file())
+    for directory in ['backend/omr', 'backend/tests']:
+        source.update(p.relative_to(ROOT).as_posix() for p in (ROOT / directory).glob('*.py'))
+    source.update(p.relative_to(ROOT).as_posix() for p in (ROOT / 'labs').glob('recognition.*'))
     DIST.mkdir(exist_ok=True)
     write_zip('声伴-网页发布包.zip', runtime)
     write_zip('声伴-代码提交包.zip', source)

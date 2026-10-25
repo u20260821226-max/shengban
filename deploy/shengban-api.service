@@ -1,0 +1,31 @@
+[Unit]
+Description=Shengban recognition API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=shengban
+Group=shengban
+WorkingDirectory=/opt/shengban/app
+Environment=HOME=/var/lib/shengban
+Environment=AUDIVERIS_BIN=/opt/audiveris/bin/Audiveris
+Environment=RECOGNITION_STORAGE=/var/lib/shengban/jobs
+Environment=JAVA_TOOL_OPTIONS=-Djava.awt.headless=true
+ExecStart=/opt/shengban/venv/bin/uvicorn backend.public_api:create_app --factory --host 127.0.0.1 --port 8000 --workers 1 --proxy-headers --forwarded-allow-ips=127.0.0.1 --no-access-log
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=180
+KillMode=control-group
+MemoryMax=3G
+TasksMax=256
+CPUQuota=180%
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/shengban
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+[Install]
+WantedBy=multi-user.target

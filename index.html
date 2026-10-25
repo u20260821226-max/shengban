@@ -70,11 +70,12 @@
             </aside>
           </div>
         </section>
+        <section id="recognition-view" class="view" aria-label="上传乐谱与自动识谱"><button class="back-link" data-view="library">← 返回曲库</button><div id="recognition-host"></div></section>
       </main>
     </div>
 
-    <dialog id="import-dialog" aria-labelledby="import-title"><button class="modal-close" data-close aria-label="关闭">×</button><p class="eyebrow">导入乐谱</p><h2 id="import-title">先准备好你的乐谱</h2><p>当前演示可播放《爱永在》《小幸运》和《有一种悲伤》。新曲目需要先识谱、校对，再加入曲库；图片自动识谱尚未接通。</p><button class="primary-button" data-close>返回曲库</button></dialog>
-    <dialog id="rights-dialog"><button class="modal-close" data-close aria-label="关闭">×</button><p class="eyebrow">使用说明</p><h2>仅使用你有权练习的乐谱</h2><p>当前原型不会上传或保存图片。正式服务接入后，乐谱处理方式与保存期限会在上传前说明。</p><button class="primary-button" data-close>我知道了</button></dialog>
+    <dialog id="import-dialog" aria-labelledby="import-title"><button class="modal-close" data-close aria-label="关闭">×</button><p class="eyebrow">导入乐谱</p><h2 id="import-title">选择你的乐谱类型</h2><p>同一首歌可上传 1 至 6 页印刷五线谱，核对页序后生成连续试听。</p><button class="primary-button" data-layout-choice="vocal">三行声乐谱 · 人声＋钢琴双手</button><p>可选择纯伴奏或带旋律提示的钢琴演奏。</p><button class="primary-button" data-layout-choice="piano">两行钢琴谱 · 右手＋左手</button><p>完整演奏两行，不分离主旋律。暂不支持吉他六线谱。</p></dialog>
+    <dialog id="rights-dialog"><button class="modal-close" data-close aria-label="关闭">×</button><p class="eyebrow">使用说明</p><h2>仅使用你有权练习的乐谱</h2><p>预置曲目可直接试听。自动识谱试用会将图片上传至识谱服务器，图片与结果约 24 小时后清理；具体范围和次数限制见上传页面。</p><button class="primary-button" data-close>我知道了</button></dialog>
     <div class="toast" id="toast" role="status"></div>
     <script src="vendor/opensheetmusicdisplay.min.js"></script>
     <script type="module" src="practice-app.js"></script>
