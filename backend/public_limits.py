@@ -24,9 +24,9 @@ def check_quota(store, owner, pages=1):
     now = time.time()
     recent = [d for d in store.jobs.values() if now - d['createdAt'] < 86400]
     if sum(d.get('pageCount', 1) for d in recent) + pages > 30:
-        raise HTTPException(429, '今天的演示识谱额度已用完，请明天再试；预置曲目仍可播放。')
+        raise HTTPException(429, '最近 24 小时的演示识谱额度已用完，将按提交时间逐步恢复；预置曲目仍可播放。')
     if sum(d.get('owner') == owner for d in recent) >= 5:
-        raise HTTPException(429, '本浏览器今天已提交 5 次，请明天再试。')
+        raise HTTPException(429, '本浏览器最近 24 小时已提交 5 次，较早任务满 24 小时后可重试。')
 
 
 class UploadLimiter:

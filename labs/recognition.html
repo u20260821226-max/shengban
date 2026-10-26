@@ -13,14 +13,15 @@
     <form id="upload-form">
       <label for="layout">乐谱类型</label>
       <select id="layout"><option value="vocal">三行声乐谱 · 人声旋律＋钢琴双手</option><option value="piano">两行钢琴谱 · 右手＋左手完整演奏</option></select>
-      <label for="image">选择谱图（最多 6 页 JPG / PNG，每页不超过 10 MB）</label>
-      <input id="image" type="file" accept="image/jpeg,image/png" multiple>
+      <label for="image">选择乐谱（1 至 6 张图片，或一份最多 6 页的 PDF）</label>
+      <input id="image" type="file" accept="image/jpeg,image/png,application/pdf,.pdf" multiple>
       <ol id="page-list" aria-label="按此页序生成伴奏"></ol>
-      <p class="limits">先按文件名排序，可用下方按钮调整页序。每页最多 16 小节、全曲最多 96 小节，固定 2/4、3/4、4/4 拍，最多两个升降号；暂不支持复杂反复或连音组。多页会逐页识别，可能需要数分钟。</p>
+      <p class="limits">每个文件不超过 10 MB。图片先按文件名排序，可用按钮调整；PDF 按文档页序自动转页，请勿与图片混传。每页最多 16 小节、全曲最多 96 小节，固定 2/4、3/4、4/4 拍，最多三个升降号；暂不支持复杂反复或连音组。多页可能需要数分钟。</p>
       <button id="submit" class="primary-button">识别并生成试听</button>
     </form>
-    <p id="privacy-note" class="privacy-note">云端试用会上传谱图，图片与结果约 24 小时后清理。每个浏览器每天限 5 次任务，全站每天限 30 页；一次处理一首歌。请仅上传有权使用的乐谱，保留原件。</p>
+    <p id="privacy-note" class="privacy-note">云端试用会上传乐谱，图片与结果约 24 小时后清理。最近 24 小时内，每个浏览器最多 5 次任务，全站最多 30 页，额度按提交时间逐步恢复；一次处理一首歌。请仅上传有权使用的乐谱，保留原件。</p>
     <p id="status" role="status" aria-live="polite">选择一张清晰、谱线完整的印刷谱图开始。</p>
+    <ol id="processing-steps" class="processing-steps" aria-label="生成步骤" hidden><li data-step="uploading">上传与转页</li><li data-step="recognizing">识谱</li><li data-step="checking">检查</li><li data-step="completed">试听</li></ol>
     <p id="elapsed" class="privacy-note" hidden></p>
     <button id="reconnect" class="reconnect-button" hidden>继续查看任务</button>
     <section id="result" hidden aria-label="识谱结果">

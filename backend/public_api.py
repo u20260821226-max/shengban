@@ -9,6 +9,7 @@ import re
 
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import JSONResponse, Response
+from starlette.concurrency import run_in_threadpool
 
 from .omr.errors import RecognitionTimeout
 from .omr.jobs import Busy, JobStore
@@ -84,8 +85,8 @@ def create_app(storage=None, recognizer=recognize):
         if origin and origin != str(request.base_url).rstrip('/'):
             raise HTTPException(403, '请从识谱页面提交。')
         content_type = request.headers.get('content-type', '')
-        if content_type not in {'image/jpeg', 'image/png'} and not content_type.startswith('multipart/form-data;'):
-            raise HTTPException(415, '仅支持 JPG、PNG 图片。')
+        if content_type not in {'image/jpeg', 'image/png', 'application/pdf'} and not content_type.startswith('multipart/form-data;'):
+            raise HTTPException(415, '仅支持 JPG、PNG 图片或 PDF。')
         limiter.check(request.client.host if request.client else 'unknown')
         if upload_lock.locked():
             raise HTTPException(429, '有人正在上传，请稍后重试。')
@@ -104,7 +105,7 @@ def create_app(storage=None, recognizer=recognize):
             if not raw:
                 raise HTTPException(400, '图片为空，请重新选择。')
             try:
-                images, layout = decode_upload(bytes(raw), content_type)
+                images, layout = await run_in_threadpool(decode_upload, bytes(raw), content_type)
             except UploadError as error:
                 raise HTTPException(error.status, str(error))
             with store.lock:

@@ -13,6 +13,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 from .musicxml import UnsupportedScore, parse_xml, read_mxl, to_song
 from .errors import RecognitionTimeout, RecognitionUncertain
 from .pages import MAX_PAGES, page_for_measure, write_book
+from .images import paper_bounds
 
 DEFAULT_BIN = '/Applications/Audiveris.app/Contents/MacOS/Audiveris'
 ATTEMPT_TIMEOUT_SECONDS = 150
@@ -34,11 +35,15 @@ def prepare_image(source, target, retry=False):
                 paper = Image.new('RGBA', image.size, 'white')
                 image = Image.alpha_composite(paper, rgba).convert('RGB')
             gray = ImageOps.grayscale(image)
+            bounds = paper_bounds(gray)
+            if bounds:
+                gray = gray.crop(bounds)
             factor = (3 if gray.width < 1600 else 1.5) if retry else (2 if gray.width < 1600 else 1)
             scale = min(factor, (25_000_000 / (gray.width * gray.height)) ** .5)
             if scale != 1:
                 gray = gray.resize((round(gray.width * scale), round(gray.height * scale)), Image.Resampling.LANCZOS)
             gray.save(target, 'PNG')
+            return {'cropped': bool(bounds)}
     except (UnidentifiedImageError, OSError, Image.DecompressionBombError) as exc:
         raise UnsupportedScore('图片无法读取，请重新上传完整的 JPG 或 PNG。') from exc
 
@@ -128,13 +133,16 @@ def recognize(source, folder, title, progress=lambda status, message: None, layo
     if not executable.is_file():
         raise RuntimeError('本机未找到 Audiveris，尚不能执行识谱。')
     progress('preparing', '正在检查图片并调整识谱输入')
+    cropped = set()
     def prepare(retry=False):
         images = []
         for index, path in enumerate(sources, 1):
             target = folder / (f'page-{index:02d}' + ('-retry' if retry else '') + '.png')
             progress('preparing', f'正在检查第 {index} / {len(sources)} 页并调整图片')
             try:
-                prepare_image(path, target, retry=retry)
+                info = prepare_image(path, target, retry=retry)
+                if info.get('cropped'):
+                    cropped.add(index)
             except UnsupportedScore as error:
                 raise type(error)(f'第 {index} 页：{error}') from error
             images.append(target)
@@ -156,7 +164,7 @@ def recognize(source, folder, title, progress=lambda status, message: None, layo
             raise initial
         attempts = 2
         xml, song = run_attempt(executable, retry_image, folder, title, progress, retry=True, page_count=len(sources), layout=layout)
-    song['processing'] = {'attempts': attempts, 'pages': len(sources)}
+    song['processing'] = {'attempts': attempts, 'pages': len(sources), 'croppedPages': sorted(cropped)}
     (folder / 'score.musicxml').write_bytes(xml)
     (folder / 'song.json').write_text(json.dumps(song, ensure_ascii=False))
     return song

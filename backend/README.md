@@ -2,7 +2,7 @@
 
 当前识谱服务为 `public_api.py` + `omr/`，部署方式见 [公网识谱部署](../docs/公网识谱部署.md)。匿名浏览器 token 隔离任务，无需注册；不代表实现正式用户系统。下文 `app/` 是独立的旧账户骨架，当前网站未使用。
 
-另有独立的本机自动识谱测试：在项目根目录运行 `python3 -m backend.local_recognition`，打开 http://localhost:4175/ 。它使用标准库和 Pillow，不依赖下面的 FastAPI/账户骨架，不是公网生产服务。详见 `docs/自动识谱本机测试.md`。
+另有独立的本机自动识谱测试：先用同一个Python环境安装 `backend/recognition-requirements.txt`，在项目根目录运行 `python3 -m backend.local_recognition`，打开 http://localhost:4175/ 。它使用标准库、Pillow及PDF转页依赖pypdfium2，不依赖下面的FastAPI/账户骨架，不是公网生产服务。详见 `docs/自动识谱本机测试.md`。
 
 ## 已实现
 

@@ -17,6 +17,16 @@ export function initRecognition(root = document, initialLayout = 'vocal') {
   const score = new ScoreView($('#score'));
   let working = false;
 
+  function processingStage(stage) {
+    const steps = $('#processing-steps');
+    steps.hidden = false;
+    const current = ['queued', 'preparing'].includes(stage) ? 'recognizing' : stage;
+    for (const step of steps.children) {
+      if (step.dataset.step === current) step.setAttribute('aria-current', 'step');
+      else step.removeAttribute('aria-current');
+    }
+  }
+
   function status(message, error = false) {
     if ($('#status').textContent !== message) $('#status').textContent = message;
     $('#status').dataset.error = String(error);
@@ -26,7 +36,8 @@ export function initRecognition(root = document, initialLayout = 'vocal') {
     if (working) return;
     working = true; player.pause(); $('#submit').disabled = true; picker.setDisabled(true); $('#layout').disabled = true;
     $('#result').hidden = true; $('#reconnect').hidden = true; $('#elapsed').hidden = true;
-    status(resumeId ? '正在恢复上次任务，不会重新生成…' : '正在上传谱图，请稍候…');
+    processingStage(resumeId ? 'recognizing' : 'uploading');
+    status(resumeId ? '正在恢复上次任务，不会重新生成…' : images?.[0]?.type === 'application/pdf' ? '正在上传 PDF、检查页数并自动转页，请稍候…' : '正在上传谱图，请稍候…');
     let id = resumeId;
     try {
       if (images) {
@@ -39,6 +50,7 @@ export function initRecognition(root = document, initialLayout = 'vocal') {
       }
       rememberTask(id, $('#layout').value);
       const result = await watchTask(id, state => {
+        processingStage(state.status);
         status(state.message);
         if (state.elapsedSeconds !== undefined) {
           $('#elapsed').hidden = false;
@@ -73,7 +85,7 @@ export function initRecognition(root = document, initialLayout = 'vocal') {
 
   $('#upload-form').addEventListener('submit', event => {
     event.preventDefault();
-    if (!picker.files.length) { status('请先选择 1 至 6 页谱图。', true); return; }
+    if (!picker.files.length) { status('请先选择 1 至 6 张图片，或一份最多 6 页的 PDF。', true); return; }
     generate([...picker.files]);
   });
   $('#reconnect').addEventListener('click', () => { const id = lastTask($('#layout').value); if (id) generate(null, id); });

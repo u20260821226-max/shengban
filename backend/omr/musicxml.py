@@ -56,8 +56,8 @@ def _part_events(part, role):
                     raise UnsupportedScore('暂不支持中途换拍。')
                 meter = candidate
             for fifths in attr.findall('key/fifths'):
-                if abs(int(fifths.text)) > 2:
-                    raise UnsupportedScore('试用版暂限最多两个升降号。')
+                if abs(int(fifths.text)) > 3:
+                    raise UnsupportedScore('试用版暂限最多三个升降号。')
         if not divisions or divisions < 0 or meter is None:
             raise UnsupportedScore('未能读出完整拍号或时值信息。')
         expected = Fraction(int(meter[0]))
@@ -73,7 +73,7 @@ def _part_events(part, role):
                 previous = None
             elif element.tag == 'note':
                 if element.find('grace') is not None or element.find('time-modification') is not None:
-                    raise UnsupportedScore('试用版暂不支持装饰音或连音组。')
+                    raise UnsupportedScore(f'第 {index + 1} 小节的识别结果包含装饰音或连音组，试用版暂不支持。')
                 duration = Fraction(element.findtext('duration', '0')) / divisions
                 if duration <= 0:
                     raise UnsupportedScore('有音符缺少可用时值。')

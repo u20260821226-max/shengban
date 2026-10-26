@@ -107,8 +107,8 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path != '/api/recognition':
             return self.reply(404, {'message': '接口不存在'})
         content_type = self.headers.get('Content-Type', '')
-        if content_type not in {'image/jpeg', 'image/png'} and not content_type.startswith('multipart/form-data;'):
-            return self.reply(415, {'message': '仅支持 JPG、PNG 图片'})
+        if content_type not in {'image/jpeg', 'image/png', 'application/pdf'} and not content_type.startswith('multipart/form-data;'):
+            return self.reply(415, {'message': '仅支持 JPG、PNG 图片或 PDF'})
         try:
             length = int(self.headers.get('Content-Length', '0'))
         except ValueError:

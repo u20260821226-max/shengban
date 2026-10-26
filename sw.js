@@ -1,4 +1,4 @@
-const CACHE = 'shengban-v10-multipage-workspace';
+const CACHE = 'shengban-v11-pdf-upload';
 self.addEventListener('install', event => event.waitUntil((async () => {
   const response = await fetch('./asset-list.json', { cache: 'no-store' });
   const files = await response.json();

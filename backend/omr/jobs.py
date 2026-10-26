@@ -16,7 +16,7 @@ RETENTION_SECONDS = 24 * 60 * 60
 def pipeline_version():
     folder = Path(__file__).parent
     return sha256(b''.join((folder / name).read_bytes() for name in
-                           ['pipeline.py', 'musicxml.py', 'rhythm.py', 'errors.py', 'pages.py'])).hexdigest()
+                           ['pipeline.py', 'musicxml.py', 'rhythm.py', 'errors.py', 'pages.py', 'images.py'])).hexdigest()
 
 
 class Busy(RuntimeError):
