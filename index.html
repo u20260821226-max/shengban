@@ -3,48 +3,55 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#17211e" />
-    <title>声伴 · 声乐练习伴奏</title>
+    <script>const chosenTheme = new URLSearchParams(location.search).get('theme'); document.documentElement.dataset.theme = ['silver', 'concert'].includes(chosenTheme) ? chosenTheme : 'studio';</script>
+    <meta name="theme-color" content="#111714" />
+    <title>声伴 · 音乐相伴</title>
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="styles.css" />
-    <link rel="stylesheet" href="practice.css" />
-  </head>
+    <link rel="stylesheet" href="practice.css" /><link rel="stylesheet" href="mist.css" /><link rel="stylesheet" href="motion.css" />
+  <link rel="stylesheet" href="intro.css"><link rel="stylesheet" href="scenery.css"></head>
   <body>
     <div class="app-shell">
       <aside class="sidebar" aria-label="主导航">
         <a href="#" class="brand" aria-label="声伴首页"><span class="brand-mark">♪</span><span>声伴</span></a>
+        <p class="brand-subtitle">你的声乐练习空间</p>
         <nav>
-          <button class="nav-item active" data-view="library"><span>▦</span>我的曲目</button>
-          <button class="nav-item" data-view="practice"><span>◉</span>正在练习</button>
+          <button class="nav-item active" data-view="library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 3v18M11 8h5M11 12h5M11 16h3"/></svg>我的曲目</button>
+          <button class="nav-item" data-view="practice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="m10 8 6 4-6 4Z"/></svg>正在练习</button>
         </nav>
+        <p class="sidebar-note">按自己的音域，<br>慢慢练习。</p>
         <div class="sidebar-bottom">
-          <button class="copyright-link" id="show-rights">版权与使用说明 ↗</button>
-          <div class="user"><span class="avatar">林</span><span><b>林予安</b><small>声乐生</small></span><button aria-label="账户菜单">⌄</button></div>
+          
+          <div class="workspace-label"><span class="workspace-symbol" aria-hidden="true">♮</span><span><b>声乐练习空间</b><small>钢琴伴奏 · 旋律提示</small></span></div>
         </div>
       </aside>
 
       <main>
         <header class="topbar">
           <button class="back-button" data-view="library">我的曲目</button>
-          <div class="crumb">我的曲目 <span>/</span> 练习曲库</div>
+          <div class="crumb">我的曲目 / 练习曲库 </div>
           <button class="new-score" data-import><span>＋</span> 导入新乐谱</button>
         </header>
 
         <section class="view active" id="library-view" aria-labelledby="library-title">
           <div class="library-heading">
-            <div><p class="eyebrow">我的曲目</p><h1 id="library-title">今天，从一页乐谱开始。</h1><p class="subcopy">选择曲目，调到适合你的音高与速度。</p></div>
-            
+            <div><p class="eyebrow">我的曲目</p><h1 id="library-title"><span>新的开始，</span><span>心的共振</span></h1><p class="subcopy">让熟悉的音符，陪你发现日常里的美好。</p><div class="hero-actions"><button class="primary-button" data-view="practice">开启音乐时光 <span aria-hidden="true">↗</span></button><button class="hero-import" data-import>导入你的乐谱 <span aria-hidden="true">＋</span></button></div></div>
+            <div class="library-art" aria-hidden="true"><svg viewBox="0 0 240 150" fill="none" stroke="currentColor"><path opacity=".3" d="M8 42h224M8 54h224M8 66h224M8 78h224M8 90h224"/><path stroke-width="1.2" d="M28 122V28h27v94M55 28h27v94M82 28h27v94M109 28h27v94M136 28h27v94M163 28h27v94M190 28h22v94M28 122h184"/><path fill="currentColor" opacity=".28" stroke="none" d="M47 28h15v53H47zM74 28h15v53H74zM128 28h15v53h-15zM155 28h15v53h-15zM182 28h15v53h-15z"/></svg></div>
           </div>
-          <div class="search-row"><label class="search"><span>⌕</span><input id="song-search" aria-label="搜索曲目" placeholder="搜索曲目" /></label><span class="library-count">3 首演示曲目</span></div>
+          <div class="library-section-title"><p>你的练习曲库</p><h2>熟悉的旋律，新的进步。</h2></div>
+          <div class="search-row"><label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="song-search" aria-label="搜索曲目" placeholder="寻找今天想练的曲目" /></label><span class="library-count">3 首演示曲目</span></div>
+          <div class="list-heading" aria-hidden="true"><span>曲目</span><span>调号 / 速度</span><span>试听</span></div>
           <div class="score-list" id="songs" aria-label="曲目列表"></div>
           <p id="empty-library" hidden>没有找到曲目，请换个名字试试。</p>
-          <button class="import-banner" data-import><span class="upload-glyph">↥</span><span><b>还想练一首新曲子？</b><small>导入钢琴伴奏五线谱</small></span><strong>→</strong></button>
+          <button class="import-banner" data-import><span class="upload-glyph" aria-hidden="true">↥</span><span><b>还想练一首新曲子？</b><small>导入图片或 PDF，开始一段新的练习</small></span><strong aria-hidden="true">→</strong></button>
+          <button class="copyright-link" id="show-rights">版权与使用说明 ↗</button>
+          <p class="library-footnote">纯伴奏，或加一点旋律提示。用适合自己的速度，把每一段练熟。</p>
         </section>
 
         <section class="view" id="practice-view" aria-labelledby="practice-title">
           <div class="practice-head"><button class="back-button" data-view="library">← <span>曲目库</span></button><button class="back-button" id="restart">回到开头 ↶</button></div>
-          <div class="piece-heading"><div class="piece-index">01</div><div><p class="eyebrow">钢琴伴奏练习</p><h1 id="practice-title">爱永在</h1><p id="practice-subtitle">16 小节 · 比赛演示曲目</p></div><div class="saved"><span>✓</span> 已保存</div></div>
+          <div class="piece-heading"><div class="piece-index">01</div><div><p class="eyebrow">钢琴伴奏练习</p><h1 id="practice-title">爱永在</h1><p id="practice-subtitle">16 小节 · 比赛演示曲目</p></div><div class="saved"><span>♮</span> 钢琴音色</div></div>
           <div class="practice-grid">
             <section class="score-paper" aria-label="曲目五线谱">
               <div class="paper-top"><span id="score-title">爱永在</span><span id="score-key-label">原调</span><button id="score-expand" aria-expanded="false" aria-controls="score-scroll">展开全谱</button></div>
@@ -78,6 +85,6 @@
     <dialog id="rights-dialog"><button class="modal-close" data-close aria-label="关闭">×</button><p class="eyebrow">使用说明</p><h2>仅使用你有权练习的乐谱</h2><p>预置曲目可直接试听。自动识谱试用会将图片上传至识谱服务器，图片与结果约 24 小时后清理；具体范围和次数限制见上传页面。</p><button class="primary-button" data-close>我知道了</button></dialog>
     <div class="toast" id="toast" role="status"></div>
     <script src="vendor/opensheetmusicdisplay.min.js"></script>
-    <script type="module" src="practice-app.js"></script>
-  </body>
+    <script type="module" src="practice-app.js"></script><script type="module" src="motion.js"></script>
+  <script type="module" src="intro.js"></script><script type="module" src="practice-buttons.js"></script></body>
 </html>

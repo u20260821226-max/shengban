@@ -8,7 +8,7 @@ export async function mountRecognition(container, layout) {
   const { initRecognition } = await import('/labs/recognition.js');
   const shadow = container.shadowRoot || container.attachShadow({ mode: 'open' });
   shadow.replaceChildren();
-  for (const href of ['/styles.css', '/labs/recognition.css']) {
+  for (const href of ['/styles.css', '/labs/recognition.css', '/mist.css', '/motion.css']) {
     const link = window.document.createElement('link'); link.rel = 'stylesheet'; link.href = href;
     shadow.append(link);
   }

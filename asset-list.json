@@ -59,5 +59,18 @@
   "./labs/recognition.js",
   "./labs/recognition.task.js",
   "./labs/recognition.pages.js",
-  "./labs/recognition.css"
+  "./labs/recognition.css",
+  "./theme.css",
+  "./mist.css",
+  "./motion.css",
+  "./motion.js",
+  "./intro.js",
+  "./intro.css",
+  "./scenery.css",
+  "./practice-buttons.js",
+  "./labs/recognition.waiting.js",
+  "./assets/visuals/you-yi-zhong-bei-shang-cover.jpg",
+  "./assets/visuals/mountain-lake.webp",
+  "./assets/visuals/xiao-xing-yun-cover.jpg",
+  "./assets/visuals/ai-yong-zai-cover.jpg"
 ]

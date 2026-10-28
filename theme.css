@@ -1,0 +1,27 @@
+/* Shared studio tokens; notation has separate paper and ink colors. */
+:root {
+ color-scheme:dark;
+ --background:#111714; --deep:#0b110e; --surface:#19221c; --surface-raised:#202b23;
+ --ink:#f0eee5; --ink-soft:#a3afa5; --muted:#87968b; --line:#303d33;
+ --moss:#a5bca6; --moss-light:#26382d; --accent:#dac194; --accent-ink:#251f14;
+ --orange:var(--accent); --red:#f1af9c; --paper:#eeeae0; --paper-dark:#ded9cb;
+ --score-ink:#28342d; --shadow:0 20px 55px rgb(0 0 0 / 20%);
+ --body-font:'PingFang SC','Microsoft YaHei',sans-serif;
+ --title-font:'Songti SC','Noto Serif SC','STSong',serif;
+ --number-font:'SFMono-Regular','Menlo',monospace;
+}
+
+/* B — a cooler, compact practice workspace. */
+:root[data-theme=silver]{
+ --background:#11151b;--deep:#0b0f14;--surface:#1a222c;--surface-raised:#25303d;
+ --ink:#edf2f7;--ink-soft:#adb9c7;--muted:#8e9fb2;--line:#344250;
+ --moss:#b0c6d8;--moss-light:#26394b;--accent:#b9d5e8;--accent-ink:#16222c;
+ --paper:#e8ecee;--paper-dark:#d7dfe3;--score-ink:#24313c;--title-font:var(--body-font);
+}
+/* C — a warm concert-programme palette. */
+:root[data-theme=concert]{
+ --background:#1a1315;--deep:#130d0f;--surface:#2a1d21;--surface-raised:#38272c;
+ --ink:#f2e8df;--ink-soft:#c4b1ae;--muted:#ad9394;--line:#483238;
+ --moss:#dfb6b5;--moss-light:#402b31;--accent:#e0bea3;--accent-ink:#2c1819;
+ --paper:#f0e5d8;--paper-dark:#e3d5c3;--score-ink:#3b2a2b;
+}

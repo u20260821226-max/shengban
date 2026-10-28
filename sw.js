@@ -1,4 +1,4 @@
-const CACHE = 'shengban-v11-pdf-upload';
+const CACHE = 'shengban-v13-no-replay-20261028';
 self.addEventListener('install', event => event.waitUntil((async () => {
   const response = await fetch('./asset-list.json', { cache: 'no-store' });
   const files = await response.json();

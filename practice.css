@@ -1,36 +1,22 @@
-/* Local additions keep the original visual language and give real scores room. */
-[hidden]{display:none!important}
-.library-count{font-size:12px;color:var(--ink-soft)}
-.score-row{cursor:pointer}
-.score-paper{height:auto;min-height:480px;max-height:76vh;overflow:auto;padding:25px 18px;scrollbar-gutter:stable}
-.paper-top{margin:0 5px 12px;position:sticky;top:-25px;z-index:1;background:var(--paper);padding:12px 0;border-bottom:1px solid var(--line)}
-#score-container{width:100%;min-width:0;background:white;border-radius:3px}
-#score-container svg{display:block;max-width:100%}
-.preview-caption,.control-note,.position-label{font-size:12px;line-height:1.7;color:var(--ink-soft)}
-.position-label{text-align:center;margin-top:-12px;margin-bottom:18px;font-family:'DM Mono',monospace}
-.control-deck{position:sticky;top:18px}
-.practice-grid{grid-template-columns:minmax(0,1.3fr) minmax(285px,.7fr);gap:24px}
-.practice-tools{margin-top:12px}
-.control-note{margin:8px 0}
-.deck-section>input[type=range]{width:100%}
-.count-button{padding:10px;width:100%;border:1px solid var(--line);border-radius:5px;font-size:12px;color:var(--ink-soft);margin-top:8px}
-.count-button.active{background:var(--moss-light);border-color:var(--moss)}
-.backup-panel{border-top:1px solid var(--line);margin-top:20px;padding-top:14px;font-size:12px;color:var(--ink-soft)}
-.backup-panel summary{cursor:pointer}
-.backup-panel p{line-height:1.6}
-.backup-panel audio{display:block;width:100%;margin-top:10px;height:36px}
-button:disabled{opacity:.45;cursor:not-allowed}
-button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid var(--orange);outline-offset:4px}
-@media(max-width:1100px){.practice-grid{grid-template-columns:minmax(0,1fr)}.control-deck{position:static}.score-paper{max-height:65vh}}
-@media(max-width:820px){.score-paper{padding:18px 8px;min-height:260px;max-height:50vh}.paper-top{top:-18px}.piece-heading h1{font-size:30px}.control-deck{padding:22px}.track-tab{min-height:38px}.score-main p:last-child{max-width:190px}.sidebar{position:absolute}.practice-head{gap:20px}}
-
-/* Keep reading controls visible outside the score's scrollable viewport. */
-.score-paper{min-height:0;max-height:none;overflow:visible}
-.paper-top{position:static;display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:0;padding:0 0 12px}
-.paper-top>span:first-child{margin-right:auto}
-#score-expand{border:1px solid var(--line);border-radius:5px;padding:8px 12px;min-height:44px;font-size:12px;background:#fffefb;white-space:nowrap}
-#score-expand[aria-expanded=true]{background:var(--moss-light);border-color:var(--moss)}
-.score-reading-hint{font-size:12px;line-height:1.6;color:var(--ink-soft);margin:10px 0}
-.score-scroll{max-height:65vh;overflow:auto;scrollbar-gutter:stable;-webkit-overflow-scrolling:touch}
-.score-paper.is-expanded .score-scroll{max-height:none;overflow:visible;scrollbar-gutter:auto}
-@media(max-width:820px){.score-paper{height:auto;min-height:0;max-height:none}.score-scroll{max-height:46vh}.paper-top{gap:8px}.score-paper .preview-caption{margin-bottom:0}}
+/* Practice desk: dark controls with a separate readable score surface. */
+.practice-head{display:flex;justify-content:space-between;gap:20px}.piece-heading{display:flex;align-items:center;gap:23px;margin:24px 0 34px}.piece-index{padding-right:21px;border-right:1px solid var(--line);color:var(--accent);font:17px var(--number-font)}
+.piece-heading h1{margin:0;font:500 39px/1.4 var(--title-font)}.piece-heading .eyebrow{margin-bottom:8px}.piece-heading p:last-child{color:var(--ink-soft);margin:8px 0 0;font-size:12px}.saved{color:var(--moss);font-size:11px;margin-left:auto}.saved span{margin-right:7px}
+.practice-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.75fr);gap:26px;align-items:start}
+.score-paper{min-width:0;height:auto;padding:23px 19px 16px;background:var(--paper);color:var(--score-ink);border:1px solid #d9d2c3;border-radius:4px;box-shadow:var(--shadow);color-scheme:light}
+.paper-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:0 2px 13px;border-bottom:1px solid #cdc9be;font:14px var(--title-font)}.paper-top>span:first-child{margin-right:auto;font-weight:600}.paper-top>span:nth-child(2){color:#586450;font:11px var(--body-font)}
+#score-expand{padding:8px 12px;min-height:44px;border:1px solid #b5bcae;border-radius:4px;background:#e7e7dc;color:var(--score-ink);font-size:11px;white-space:nowrap}#score-expand[aria-expanded=true]{background:#d6dfcf;border-color:#6d8064}
+.score-reading-hint,.preview-caption{color:#596252;font-size:11px;line-height:1.8;margin:11px 0}.preview-caption{padding-top:12px;margin-bottom:0;border-top:1px solid #d6d1c3}
+.score-scroll{max-height:65vh;overflow:auto;scrollbar-gutter:stable;-webkit-overflow-scrolling:touch}.score-paper.is-expanded .score-scroll{max-height:none;overflow:visible;scrollbar-gutter:auto}
+#score-container{width:100%;min-width:0;background:white;border-radius:2px}#score-container svg{display:block;max-width:100%}.score-paper :focus-visible{outline-color:#446448}
+.control-deck{position:sticky;top:22px;padding:25px;background:var(--surface);border:1px solid var(--line);border-radius:9px;box-shadow:0 10px 32px rgb(0 0 0 / 12%)}
+.track-tabs{display:grid;grid-template-columns:1fr 1fr;padding:4px;gap:4px;border:1px solid var(--line);border-radius:6px;background:#111a14}.track-tab{padding:11px 5px;min-height:44px;font-size:13px;color:var(--ink-soft);border-radius:3px}.track-tab.active{background:#d8c29d;color:var(--accent-ink);font-weight:600}
+.track-description{color:var(--ink-soft);font-size:11px;line-height:1.8;min-height:40px;margin:16px 0 18px}.transport{display:flex;align-items:center;justify-content:center;gap:27px}.transport button:not(.main-play){color:#c0ccbc;font-size:23px;width:44px;height:44px}
+.main-play{width:61px;height:61px;border-radius:50%;background:var(--accent);color:var(--accent-ink);padding-left:5px;font-size:20px;box-shadow:0 5px 18px rgb(0 0 0 / 23%)}
+.timeline{display:grid;grid-template-columns:39px minmax(0,1fr) 39px;align-items:center;gap:10px;margin:23px 0 12px;color:var(--ink-soft);font:10px var(--number-font)}.timeline input{width:100%;min-width:0}input[type=range]{accent-color:var(--accent);cursor:pointer;min-height:28px}.position-label{color:var(--ink-soft);text-align:center;font-size:11px;margin:0 0 23px}
+.deck-section{padding:19px 0;border-top:1px solid var(--line)}.deck-section>input{width:100%}.deck-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;font-size:12px}.deck-label b{color:var(--accent);font:12px var(--number-font)}.tempo-limits{display:flex;justify-content:space-between;color:var(--muted);font:10px var(--number-font)}
+.key-control{display:flex;gap:16px;align-items:center}.key-control button{width:44px;height:40px;border:1px solid #526044;border-radius:4px;background:#222d20;color:var(--accent);font-size:21px}.key-control span{min-width:30px;text-align:center;font:14px var(--number-font)}
+.practice-tools{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:3px}.practice-tools button,.count-button{min-height:44px;border:1px solid var(--line);border-radius:4px;color:var(--ink-soft);font-size:11px;padding:10px 6px}.practice-tools button:hover,.count-button:hover{border-color:#748062;color:var(--ink)}
+.control-note{color:var(--ink-soft);font-size:10px;line-height:1.8;margin:10px 0 14px}.count-button{width:100%;margin-top:3px}.count-button.active{background:var(--moss-light);border-color:var(--moss);color:var(--ink)}#loop-clear{display:block;margin:0 auto 14px;min-height:36px}
+.backup-panel{border-top:1px solid var(--line);margin-top:23px;padding-top:17px;color:var(--ink-soft);font-size:11px}.backup-panel summary{cursor:pointer;min-height:26px}.backup-panel p{font-size:11px;line-height:1.8}.backup-panel audio{width:100%;height:36px;display:block;margin-top:12px}
+@media(max-width:1140px){.practice-grid{grid-template-columns:minmax(0,1fr)}.control-deck{position:static;max-width:620px;width:100%}.score-scroll{max-height:62vh}}
+@media(max-width:820px){.piece-heading{margin:14px 0 24px;gap:13px}.piece-heading h1{font-size:31px}.piece-heading p:last-child{font-size:11px}.piece-index,.saved{display:none}.practice-grid{gap:22px}.score-paper{padding:16px 10px}.score-scroll{max-height:45vh}.paper-top{gap:7px}.score-reading-hint,.preview-caption{font-size:10px}.control-deck{padding:22px}.track-description{min-height:0}}

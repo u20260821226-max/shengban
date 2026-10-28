@@ -41,8 +41,8 @@ function renderLibrary() {
   const filter = $('#song-search').value.trim(); $('#songs').replaceChildren();
   songs.filter(s => s.title.includes(filter)).forEach(song => {
     const row = document.createElement('article'); row.className = 'score-row';
-    row.innerHTML = `<div class="score-art art-${song.color}"><span>♬</span><i></i><i></i><i></i></div><div class="score-main"><p class="score-kicker">比赛演示曲目</p><h2>${song.title}</h2><p>纯伴奏 / 三行钢琴 · ${song.measures} 小节</p></div><div class="score-meta"><span>${song.key}</span><b>♩ = 120</b></div><div class="row-actions"><button class="play-mini" aria-label="播放${song.title}">▶</button></div>`;
-    row.addEventListener('click', event => openSong(song, Boolean(event.target.closest('button'))));
+    row.innerHTML = `<div class="score-art art-${song.color}" aria-hidden="true"><span>${String(songs.indexOf(song) + 1).padStart(2, '0')}</span><i></i><i></i><i></i></div><div class="score-main"><p class="score-kicker">钢琴伴奏 · 预置曲目</p><h2><button class="song-title">${song.title}</button></h2><p>纯伴奏 / 旋律提示 · ${song.measures} 小节</p></div><div class="score-meta"><span>${song.key}</span><b>♩ = 120</b></div><div class="row-actions"><button class="play-mini" aria-label="播放${song.title}">▶</button></div>`;
+    row.addEventListener('click', event => openSong(song, Boolean(event.target.closest('.play-mini'))));
     $('#songs').append(row);
   });
   $('#empty-library').hidden = $('#songs').childElementCount > 0;
@@ -180,4 +180,5 @@ $('#score-expand').addEventListener('click', () => {
     : '谱内上下滑动可查看全曲，也可展开全谱。';
 });
 renderLibrary();
+$('.brand').addEventListener('click', event => { event.preventDefault(); setView('library'); });
 if ('serviceWorker'  in navigator) navigator.serviceWorker.register('./sw.js').catch(() => showToast('离线缓存未启用，联网时仍可播放'));
