@@ -1,0 +1,46 @@
+/* Landscape composition. App controls remain semantic and data-driven. */
+@media(min-width:821px){
+ .sidebar{position:absolute;inset:0 auto auto max(28px,calc((100vw - 1320px)/2));width:55%;height:88px;padding:0;display:flex;flex-direction:row;align-items:center;gap:48px;border:0;background:transparent}
+ .sidebar .brand{padding:0;font-size:25px;gap:11px}.sidebar .brand-mark{width:30px;height:33px;font-size:22px}
+ .sidebar nav{display:flex;gap:8px}.sidebar .nav-item{min-height:40px;padding:9px 14px;font-size:12px;box-shadow:none;background:transparent;border-radius:4px}.sidebar .nav-item.active{background:#263730}.sidebar .nav-item svg{width:15px;height:15px}
+ .sidebar .brand-subtitle,.sidebar .sidebar-note,.sidebar .sidebar-bottom{display:none}
+ main{margin-left:0}.topbar{height:88px;max-width:none;margin:0 max(28px,calc((100vw - 1320px)/2));justify-content:flex-end;gap:23px;border-bottom:1px solid #2b3934}.crumb{display:none}
+ .view{max-width:1376px;padding:36px 28px 64px}.practice-grid{grid-template-columns:minmax(0,1.55fr) minmax(320px,.75fr)}
+}
+#library-view{padding-top:24px}
+.library-heading{min-height:510px;align-items:flex-end;padding:58px 52px;border-radius:8px;border:1px solid #5264594d;background-image:linear-gradient(90deg,#06100dde 0%,#07110d85 44%,#07110d14 82%),linear-gradient(0deg,#07110ded 0%,#07110d00 60%),url('./assets/visuals/mountain-lake.webp');background-position:center;background-size:cover;isolation:isolate}
+.library-heading:before{display:none}.library-heading .library-art{display:none}
+.library-heading .eyebrow{color:#e3eade;font-size:11px;letter-spacing:.16em;margin-bottom:22px}
+.library-heading h1{font:450 clamp(34px,3.7vw,54px)/1.32 var(--body-font);letter-spacing:-.045em;color:#f7f7ed;text-wrap:balance}
+.library-heading h1 span{display:block}.library-heading .subcopy{font-size:13px;line-height:1.95;max-width:440px;color:#d5ded4;margin-top:21px}
+.hero-actions{display:flex;align-items:center;gap:12px;margin-top:30px;flex-wrap:wrap}.hero-actions button{min-height:44px;font-size:12px;padding:12px 18px;border-radius:4px}.hero-actions .primary-button{width:auto;display:flex;gap:30px;align-items:center;background:#f1f3e9}.hero-import{border:1px solid #bdcaba88;background:#233a2a66;color:#f1f4eb;backdrop-filter:blur(7px)}.hero-import span{margin-left:20px}.hero-import:hover{background:#35543d9c}
+.library-section-title{margin-top:46px}.library-section-title p{font-size:11px;letter-spacing:.12em;color:#9fb5a7;margin:0 0 11px}.library-section-title h2{font:400 29px/1.4 var(--body-font);letter-spacing:-.04em;margin:0}
+.search-row{margin:22px 0 19px}.search{width:310px;min-height:42px;background:#121a17}.list-heading{display:none}
+.score-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;border:0}
+.score-row{display:grid;grid-template-columns:1fr auto;grid-template-areas:'art art' 'main main' 'meta action';gap:0;padding:0;border:1px solid #34463c;border-radius:6px;overflow:hidden;background:#131d18;transition:background .2s,border-color .2s,transform .2s}
+.score-row:hover,.score-row:focus-within{border-color:#6c8e76;background:#1b2a20;transform:translateY(-3px)}
+.score-art{grid-area:art;width:100%;height:142px;border-radius:0;display:flex;align-items:flex-end;padding:18px 20px;box-shadow:none;background-image:linear-gradient(0deg,#16251dc2,#15221930),url('./assets/visuals/mountain-lake.webp');background-size:cover;background-position:20% 30%}
+.score-art.art-green{background-position:55% 50%}.score-art.art-blue{background-position:90% 10%}.score-art span{font:22px var(--number-font);color:#e3edde;letter-spacing:-.06em}.score-art:after,.score-art i{display:none}
+.score-main{grid-area:main;padding:23px 22px 19px}.score-kicker{font-size:10px;color:#9fb8a6;margin-bottom:9px}.score-main h2{font-size:25px;font-weight:450;letter-spacing:-.03em}.score-main p:last-child{font-size:11px;color:#b5c5b8;margin-top:10px}
+.score-meta{grid-area:meta;display:flex;align-items:center;gap:15px;padding:0 0 22px 22px;font-size:10px}.score-meta b{font-size:10px}.row-actions{grid-area:action;padding:0 20px 20px 0}.play-mini{width:40px;height:40px;background:#294131;border-color:#65856c;color:#f1f5e9}
+.import-banner{margin-top:29px;background:#101b15;border:1px solid #3d5945;padding:27px 28px}.library-footnote{text-align:center;margin-top:28px;font-size:10px;color:#9cac9e}
+@media(min-width:821px) and (max-width:1000px){.sidebar{gap:25px}.sidebar .nav-item{padding-inline:10px}.topbar{gap:12px}.score-list{gap:13px}.score-main{padding-inline:17px}.score-main h2{font-size:22px}.score-meta{padding-left:17px;gap:8px}}
+@media(max-width:820px){
+ .library-heading{min-height:430px;padding:31px 24px;align-items:flex-end;background-position:59% center;background-image:linear-gradient(90deg,#08140c9c,#07100d30),linear-gradient(0deg,#08130deb 4%,#07110d22 90%),url('./assets/visuals/mountain-lake.webp')}
+ .library-heading h1{font-size:33px;line-height:1.4}.library-heading .subcopy{font-size:11px;max-width:270px;line-height:2}.library-heading .eyebrow{font-size:10px;margin-bottom:17px}.hero-actions{gap:9px;margin-top:24px}.hero-actions button{font-size:11px;padding:11px 14px}.hero-actions .primary-button{gap:20px}.hero-import span{margin-left:10px}
+ .library-section-title{margin-top:32px}.library-section-title h2{font-size:25px}.library-section-title p{font-size:10px}.search-row{margin:20px 0 17px}.search{width:65%}.score-list{grid-template-columns:1fr;gap:18px}.score-art{height:135px}.score-main{padding:19px 20px 16px}.score-main h2{font-size:24px}.score-meta{display:flex;padding:0 0 19px 20px;font-size:11px}.row-actions{padding-right:20px;padding-bottom:19px}.score-main p:last-child{font-size:11px}.score-kicker{font-size:10px}.import-banner{padding:21px 17px}.library-footnote{line-height:1.9}
+}
+@media(max-width:350px){.library-heading{padding:27px 19px;min-height:425px}.library-heading h1{font-size:28px}.library-heading .subcopy{font-size:10px}.hero-actions button{padding-inline:11px;font-size:10px}.hero-actions .primary-button{gap:14px}.library-section-title h2{font-size:23px}.hero-import span{margin-left:5px}}
+@media(prefers-reduced-motion:reduce){.score-row:hover,.score-row:focus-within{transform:none}}
+
+#library-view>.copyright-link{display:block;margin:23px auto 0;font-size:11px;color:var(--ink-soft)}
+/* Original user images stay intact; tonal treatment is a reversible CSS layer. */
+.score-art{height:auto;aspect-ratio:16/10;background:#1a2821;isolation:isolate;position:relative}
+.score-art.art-orange{--cover:url('./assets/visuals/ai-yong-zai-cover.jpg');--cover-position:50% 25%;--cover-saturation:.62;--cover-brightness:.76}
+.score-art.art-green{--cover:url('./assets/visuals/xiao-xing-yun-cover.jpg');--cover-position:50% 33%;--cover-saturation:.58;--cover-brightness:.76}
+.score-art.art-blue{--cover:url('./assets/visuals/you-yi-zhong-bei-shang-cover.jpg');--cover-position:50% 28%;--cover-saturation:.68;--cover-brightness:.85}
+.score-art:before{content:'';position:absolute;inset:0;background-image:var(--cover);background-size:cover;background-position:var(--cover-position);filter:saturate(var(--cover-saturation)) brightness(var(--cover-brightness));transition:transform .4s ease;z-index:0}
+.score-art:after{content:'';display:block;position:absolute;inset:0;width:auto;height:auto;border:0;border-radius:0;transform:none;background:linear-gradient(0deg,#0b1915e8 0%,#10221b44 38%,#1a302312 100%);z-index:1}
+.score-art span{position:relative;z-index:2;color:#f4f4e8;text-shadow:0 1px 8px #0006}
+.score-row:hover .score-art:before{transform:scale(1.025)}
+@media(prefers-reduced-motion:reduce){.score-row:hover .score-art:before{transform:none}}

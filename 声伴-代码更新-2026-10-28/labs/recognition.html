@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><base href="/">
+  <title>声伴 · 自动识谱试用</title>
+  <link rel="icon" href="/icon.svg"><link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/labs/recognition.css">
+<link rel="stylesheet" href="/mist.css"><link rel="stylesheet" href="/motion.css"></head>
+<body data-page="recognition">
+  <header class="lab-header"><a href="/">声伴</a><span>自动识谱 · 试用</span></header>
+  <main class="lab-main recognition-surface">
+    <h1>上传谱子，听听伴奏</h1>
+    <p class="intro">上传同一首歌的 1 至 6 页五线谱，按页序识别，生成一份连续伴奏。</p>
+    <form id="upload-form">
+      <label for="layout">乐谱类型</label>
+      <select id="layout"><option value="vocal">三行声乐谱 · 人声旋律＋钢琴双手</option><option value="piano">两行钢琴谱 · 右手＋左手完整演奏</option></select>
+      <label for="image">选择乐谱（1 至 6 张图片，或一份最多 6 页的 PDF）</label>
+      <div class="file-zone"><span class="file-zone-icon" aria-hidden="true">↥</span><label class="choose-files" for="image">选择图片或 PDF</label><input id="image" type="file" accept="image/jpeg,image/png,application/pdf,.pdf" multiple><p>JPG、PNG 或 PDF · 每个文件不超过 10 MB</p></div>
+      <ol id="page-list" aria-label="按此页序生成伴奏"></ol>
+      <div class="hold-row"><button type="button" id="clear-pages" class="hold-button" disabled><span>清空所选</span><span aria-hidden="true">↺</span></button><span class="hold-hint">只清空选择，保留电脑原件</span></div>
+      <p class="limits">每个文件不超过 10 MB。图片先按文件名排序，可用按钮调整；PDF 按文档页序自动转页，请勿与图片混传。每页最多 16 小节、全曲最多 96 小节，固定 2/4、3/4、4/4 拍，最多三个升降号；暂不支持复杂反复或连音组。多页可能需要数分钟。</p>
+      <button id="submit" class="primary-button">识别并生成试听</button>
+    </form>
+    <p id="privacy-note" class="privacy-note">云端试用会上传乐谱，图片与结果约 24 小时后清理。最近 24 小时内，每个浏览器最多 5 次任务，全站最多 30 页，额度按提交时间逐步恢复；一次处理一首歌。请仅上传有权使用的乐谱，保留原件。</p>
+    
+    <section id="waiting-scene" hidden></section>
+    <p id="status" role="status" aria-live="polite">选择一张清晰、谱线完整的印刷谱图开始。</p>
+    <ol id="processing-steps" class="processing-steps" aria-label="生成步骤" hidden><li data-step="uploading">上传与转页</li><li data-step="recognizing">识谱</li><li data-step="checking">检查</li><li data-step="completed">试听</li></ol>
+    <p id="elapsed" class="privacy-note" hidden></p>
+    <button id="reconnect" class="reconnect-button" hidden>继续查看任务</button>
+    <section id="result" hidden aria-label="识谱结果">
+      <div class="result-heading"><h2>自动识别试听</h2><span id="details"></span></div>
+      <p id="notice"></p><p id="rhythm-summary"></p><ul id="warnings"></ul>
+      <div class="playback-panel">
+        <div class="mode-tabs" role="tablist" aria-label="播放模式"><button role="tab" data-mode="accompaniment" aria-selected="true">纯伴奏</button><button role="tab" data-mode="melody" aria-selected="false">旋律提示</button></div>
+        <p id="mode-description">只播放下方钢琴双手伴奏。</p>
+        <div class="playback-controls"><button id="restart">回到开头</button><button id="play">播放</button><span id="position">00:00</span></div>
+        <label for="tempo">练习速度 <output id="tempo-label">120 BPM</output></label><input id="tempo" type="range" min="60" max="160" value="120">
+      </div>
+      <p class="reading-note">向下滑动查看完整乐谱；播放与谱面均来自本次上传，未经人工校正。</p>
+      <div class="score-wrap"><div id="score" aria-label="本次识别的完整乐谱"></div></div>
+    </section>
+  </main>
+  <script src="/vendor/opensheetmusicdisplay.min.js"></script><script type="module" src="/labs/recognition.js"></script>
+<script type="module" src="/motion.js"></script></body>
+</html>
