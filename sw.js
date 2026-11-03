@@ -1,4 +1,4 @@
-const CACHE = 'shengban-v13-no-replay-20261028';
+const CACHE = 'shengban-v19-failure-diagnostics-20261103';
 self.addEventListener('install', event => event.waitUntil((async () => {
   const response = await fetch('./asset-list.json', { cache: 'no-store' });
   const files = await response.json();

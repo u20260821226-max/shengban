@@ -1,7 +1,10 @@
+import { decorateSpeed } from '/motion.js';
+import { mountTaskWaiting } from './recognition.waiting.js';
 import { MusicPlayer } from '/music-player.js';
 import { ScoreView } from '/score-view.js';
 import { lastTask, rememberTask, requestJson, requestScore, watchTask } from './recognition.task.js';
 import { PagePicker } from './recognition.pages.js';
+import { mountResult } from './recognition.result.js';
 
 export function initRecognition(root = document, initialLayout = 'vocal') {
   const $ = selector => root.querySelector(selector);
@@ -16,11 +19,14 @@ export function initRecognition(root = document, initialLayout = 'vocal') {
   });
   const score = new ScoreView($('#score'));
   let working = false;
+  const waiting = mountTaskWaiting(root);
+  const resultView = mountResult(root, status);
+  decorateSpeed(root);
 
   function processingStage(stage) {
     const steps = $('#processing-steps');
     steps.hidden = false;
-    const current = ['queued', 'preparing'].includes(stage) ? 'recognizing' : stage;
+    const current = ['queued', 'preparing'].includes(stage) ? 'recognizing' : stage === 'recovering' ? 'checking' : stage === 'partial' ? 'completed' : stage;
     for (const step of steps.children) {
       if (step.dataset.step === current) step.setAttribute('aria-current', 'step');
       else step.removeAttribute('aria-current');
@@ -35,7 +41,10 @@ export function initRecognition(root = document, initialLayout = 'vocal') {
   async function generate(images = null, resumeId = null) {
     if (working) return;
     working = true; player.pause(); $('#submit').disabled = true; picker.setDisabled(true); $('#layout').disabled = true;
+    resultView.reset();
     $('#result').hidden = true; $('#reconnect').hidden = true; $('#elapsed').hidden = true;
+    $('#clear-pages').disabled = true;
+    waiting.start(resumeId ? '正在恢复上次任务，不会重新生成…' : images?.[0]?.type === 'application/pdf' ? '正在上传 PDF 并检查页数…' : '正在上传谱图…');
     processingStage(resumeId ? 'recognizing' : 'uploading');
     status(resumeId ? '正在恢复上次任务，不会重新生成…' : images?.[0]?.type === 'application/pdf' ? '正在上传 PDF、检查页数并自动转页，请稍候…' : '正在上传谱图，请稍候…');
     let id = resumeId;
@@ -50,17 +59,18 @@ export function initRecognition(root = document, initialLayout = 'vocal') {
       }
       rememberTask(id, $('#layout').value);
       const result = await watchTask(id, state => {
-        processingStage(state.status);
+        if (state.status) processingStage(state.status);
+        waiting.update(state);
         status(state.message);
         if (state.elapsedSeconds !== undefined) {
-          $('#elapsed').hidden = false;
+          $('#elapsed').hidden = true;
           $('#elapsed').textContent = `${state.status === 'completed' ? '本次处理耗时' : '已等待'}约 ${state.elapsedSeconds} 秒${state.status === 'completed' ? '' : '；正在自动处理，无需重新提交。'}`;
         }
       });
       await player.load(result.song);
       applyLayout(result.song.layout || 'vocal');
       await player.configure({ mode: 'accompaniment' });
-      $('#details').textContent = `${result.pageCount || 1} 页 · ${result.song.measures} 小节 · ${result.song.bpm} BPM${result.song.tempoDefaulted ? '（默认速度）' : ''}${result.song.processing.attempts > 1 ? ' · 已自动重试' : ''}`;
+      const partialMessage = resultView.render(result);
       $('#notice').textContent = result.song.notice;
       const affected = new Set(result.song.rhythmChecks.filter(check => check.gapBeats !== 0).map(check => check.measure));
       $('#rhythm-summary').textContent = `节拍检查：检查了 ${result.song.rhythmChecks.length} 组谱表时值及各声部的重叠、超拍；${affected.size ? `${affected.size} 个小节有空缺，见下方提示。` : '未发现谱表时值空缺或超拍。'}这不能排除等时值的错音或误识别。`;
@@ -70,17 +80,19 @@ export function initRecognition(root = document, initialLayout = 'vocal') {
       $('#result').hidden = false;
       $('#tempo').value = result.song.bpm;
       $('#tempo-label').textContent = `${result.song.bpm} BPM`;
-      status(result.song.layout === 'piano' ? '识别完成，可以试听完整钢琴；请留意错音、节奏与连线。' : '识别完成，可以试听两种模式；请留意错音、节奏与连线。');
+      waiting.hide();
+      status(partialMessage || (result.song.layout !== 'vocal' ? '识别完成，可以试听完整钢琴；请留意错音、节奏与连线。' : '识别完成，可以试听两种模式；请留意错音、节奏与连线。'));
       try { await score.load(await requestScore(result.scoreUrl)); }
       catch {
         $('#score').textContent = '谱面暂未显示，可先试听，或刷新页面恢复结果。';
-        status('试听已生成，谱面暂未显示；刷新后可恢复，不需要重新上传。', true);
+        status((partialMessage ? partialMessage + ' ' : '') + '试听已生成，谱面暂未显示；刷新后可恢复，不需要重新上传。', true);
       }
     } catch (error) {
-      $('#result').hidden = true; status(error.message, true);
+      $('#result').hidden = true; status(error.message, true); waiting.fail(error.message);
+      $('#processing-steps').hidden = true;
       if (error.resumable && id) $('#reconnect').hidden = false;
       else rememberTask(null, $('#layout').value);
-    } finally { working = false; $('#submit').disabled = false; picker.setDisabled(false); $('#layout').disabled = false; }
+    } finally { working = false; $('#submit').disabled = false; picker.setDisabled(false); $('#layout').disabled = false; $('#clear-pages').disabled = !picker.files.length; }
   }
 
   $('#upload-form').addEventListener('submit', event => {
@@ -99,7 +111,7 @@ export function initRecognition(root = document, initialLayout = 'vocal') {
   $('#restart').addEventListener('click', () => player.seek(0).catch(error => status(error.message, true)));
   for (const button of root.querySelectorAll('[data-mode]')) button.addEventListener('click', async () => {
     for (const tab of root.querySelectorAll('[data-mode]')) tab.setAttribute('aria-selected', String(tab === button));
-    $('#mode-description').textContent = player.song?.layout === 'piano' ? '完整播放右手和左手的两行钢琴谱。' : button.dataset.mode === 'melody' ? '人声旋律与钢琴伴奏全部用钢琴演奏。' : '只播放下方钢琴双手伴奏。';
+    resultView.describeMode(player.song?.layout === 'single' ? '完整播放单行五线谱，使用钢琴音色。' : player.song?.layout === 'piano' ? '完整播放上行和下行的两行钢琴谱。' : button.dataset.mode === 'melody' ? '人声旋律与钢琴伴奏全部用钢琴演奏。' : '只播放下方钢琴双手伴奏。');
     try { await player.configure({ mode: button.dataset.mode }); } catch (error) { status(error.message, true); }
   });
   $('#tempo').addEventListener('input', event => { $('#tempo-label').textContent = `${event.target.value} BPM`; });
@@ -109,26 +121,54 @@ export function initRecognition(root = document, initialLayout = 'vocal') {
   });
   function applyLayout(layout) {
     $('#layout').value = layout;
-    const piano = layout === 'piano';
+    const piano = layout !== 'vocal';
     const full = $('[data-mode="accompaniment"]'), melody = $('[data-mode="melody"]');
     full.textContent = piano ? '完整钢琴' : '纯伴奏';
     full.setAttribute('aria-selected', 'true'); melody.setAttribute('aria-selected', 'false');
     melody.hidden = piano;
-    $('#mode-description').textContent = piano ? '完整播放右手和左手的两行钢琴谱。' : '只播放下方钢琴双手伴奏。';
+    $('#mode-description').textContent = layout === 'single' ? '完整播放单行五线谱，使用钢琴音色。' : piano ? '完整播放上行和下行的两行钢琴谱。' : '只播放下方钢琴双手伴奏。';
   }
-  const picker = new PagePicker($('#image'), $('#page-list'), status);
+  function updateFileZone(files) {
+    player.pause(); waiting.hide(); resultView.reset(); $('#result').hidden = true;
+    $('#reconnect').hidden = true; $('#processing-steps').hidden = true;
+    const zone = $('#file-zone');
+    const statusBox = $('#file-zone-status');
+    const summary = $('#file-summary');
+    const subsummary = $('#file-subsummary');
+    const choose = $('#choose-files');
+    const hasFiles = files.length > 0;
+    zone.classList.toggle('has-files', hasFiles);
+    statusBox.hidden = !hasFiles;
+    choose.textContent = hasFiles ? '重新选择全部' : '选择图片或 PDF';
+    const isPdf = files[0]?.type === 'application/pdf';
+    $('#page-add-row').hidden = !hasFiles || isPdf;
+    $('#page-add-hint').textContent = files.length < 6 ? `还可添加 ${6 - files.length} 页` : '已达 6 页上限；移除后可继续添加';
+    if (!hasFiles) return;
+    summary.textContent = isPdf ? 'PDF 已添加' : `已添加 ${files.length} 页`;
+    subsummary.textContent = isPdf ? `${files[0].name} · 将按文档页序读取` : files.length < 6 ? '可继续添加下一页，或重新选择全部谱页' : '已达 6 页上限，可调整页序或移除谱页';
+  }
+  const picker = new PagePicker($('#image'), $('#page-list'), status, updateFileZone, {
+    appendInput: $('#additional-images'), appendButton: $('#add-pages'),
+  });
+  const clearPages = $('#clear-pages');
+  clearPages.addEventListener('click', () => {
+    if (working) return;
+    picker.files = []; $('#image').value = ''; picker.render();
+    status('已清空所选谱页，电脑中的原文件不会删除。');
+  });
+  new MutationObserver(() => { clearPages.disabled = working || !picker.files.length; }).observe($('#page-list'), {childList:true});
   $('#layout').value = initialLayout;
   $('#layout').addEventListener('change', () => {
-    player.pause(); $('#result').hidden = true;
+    player.pause(); waiting.hide(); resultView.reset(); $('#result').hidden = true;
     status('请选择该类型的谱图，核对页序后生成。');
   });
   if (lastTask(initialLayout)) generate(null, lastTask(initialLayout));
   return {
-    pause: () => player.pause(),
+    pause: () => { player.pause(); waiting.pauseAnimation(); },
     setLayout(layout) {
       if (working) { status('当前任务仍在处理，完成后可更换乐谱类型。'); return; }
       if ($('#layout').value === layout) return;
-      player.pause(); $('#layout').value = layout; $('#result').hidden = true;
+      player.pause(); waiting.hide(); resultView.reset(); $('#layout').value = layout; $('#result').hidden = true;
     },
   };
 }

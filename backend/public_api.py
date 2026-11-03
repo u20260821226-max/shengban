@@ -60,10 +60,12 @@ def create_app(storage=None, recognizer=recognize):
             data = store.snapshot(key)
             pages = data.get('pageCount', 1)
             source = folder / 'source' if pages == 1 else [folder / f'page-{i:02d}.source' for i in range(1, pages + 1)]
-            args = {} if data.get('layout', 'vocal') == 'vocal' else {'layout': 'piano'}
+            args = {} if data.get('layout', 'vocal') == 'vocal' else {'layout': data['layout']}
             song = recognizer(source, folder, '上传乐谱',
                               lambda status, message: store.update(key, status=status, message=message), **args)
-            store.update(key, status='completed', message='试听已生成，请检查效果', song=song,
+            partial = song.get('coverage', {}).get('complete') is False
+            store.update(key, status='partial' if partial else 'completed',
+                         message=song['coverage']['message'] if partial else '试听已生成，请检查效果', song=song,
                          scoreUrl=f'/api/recognition/{key}/score.musicxml')
         except UnsupportedScore as error:
             store.update(key, status='rejected', message=str(error))
@@ -71,7 +73,7 @@ def create_app(storage=None, recognizer=recognize):
             store.update(key, status='failed', message=str(error))
         except Exception:
             LOG.exception('Recognition failed: %s', key)
-            store.update(key, status='failed', message='识谱暂未完成，请换一张简单谱图重试。')
+            store.update(key, status='failed', message='识谱服务出现内部错误，本次未生成结果。这不代表原谱有误，请稍后重试。')
 
     @app.get('/api/health')
     def health():
@@ -140,7 +142,7 @@ def create_app(storage=None, recognizer=recognize):
     @app.get('/api/recognition/{key}/score.musicxml')
     def score(key: str, x_recognition_token: str = Header(default='')):
         data = authorized(key, x_recognition_token)
-        if data['status'] != 'completed':
+        if data['status'] not in {'completed', 'partial'}:
             raise HTTPException(409, '乐谱尚未生成。')
         return Response((root / key / 'score.musicxml').read_bytes(),
                         media_type='application/vnd.recordare.musicxml+xml')

@@ -9,7 +9,8 @@ from zipfile import ZipFile
 
 from .errors import RecognitionUncertain, UnsupportedScore
 from .rhythm import check_measure
-from .pages import page_for_measure
+from .pages import MAX_PAGES, MAX_MEASURES_PER_PAGE, MAX_TOTAL_MEASURES, page_for_measure
+from .layouts import score_layout
 
 
 def parse_xml(data):
@@ -34,7 +35,7 @@ def read_mxl(path):
         return bundle.read(files[0])
 
 
-def _part_events(part, role):
+def _part_events(part, role, min_fifths=-3, require_closed_ties=False):
     divisions, meter = None, None
     events, lengths, pending, warnings, checks = [], [], {}, [], []
     staff_count = max([int(e.text) for e in part.findall('.//staves')] or [1])
@@ -56,8 +57,8 @@ def _part_events(part, role):
                     raise UnsupportedScore('暂不支持中途换拍。')
                 meter = candidate
             for fifths in attr.findall('key/fifths'):
-                if abs(int(fifths.text)) > 3:
-                    raise UnsupportedScore('试用版暂限最多三个升降号。')
+                if not min_fifths <= int(fifths.text) <= 3:
+                    raise UnsupportedScore('单行钢琴谱暂限最多四个降号或三个升号。' if min_fifths == -4 else '试用版暂限最多三个升降号。')
         if not divisions or divisions < 0 or meter is None:
             raise UnsupportedScore('未能读出完整拍号或时值信息。')
         expected = Fraction(int(meter[0]))
@@ -131,12 +132,12 @@ def _part_events(part, role):
         warnings.extend(bar_warnings)
         lengths.append(expected)
         absolute += expected
-    if any(e['beat'] + e['beats'] != absolute for e in pending.values()):
+    if (require_closed_ties and pending) or any(e['beat'] + e['beats'] != absolute for e in pending.values()):
         raise RecognitionUncertain('检测到未闭合的延音线。')
     return events, lengths, warnings, checks
 
 
-def to_song(xml, title, page_measures=None, layout='vocal'):
+def to_song(xml, title, page_measures=None, layout='vocal', require_closed_ties=False):
     root = parse_xml(xml)
     if root.tag != 'score-partwise':
         raise UnsupportedScore('暂不支持此种乐谱格式。')
@@ -144,23 +145,37 @@ def to_song(xml, title, page_measures=None, layout='vocal'):
         raise UnsupportedScore('试用版暂不支持反复跳房子或移调乐器。')
     parts = root.findall('part')
     staff_counts = [max([int(e.text) for e in p.findall('.//staves')] or [1]) for p in parts]
-    expected = [2] if layout == 'piano' else [1, 2]
-    if layout not in {'piano', 'vocal'} or staff_counts != expected:
-        raise RecognitionUncertain('未能确认钢琴双行结构，请上传右手和左手的两行五线谱。' if layout == 'piano' else '未能确认上方人声、下方钢琴双行的结构，请换一张三行声乐谱。')
+    expected, roles, min_fifths = score_layout(layout)
+    if tuple(staff_counts) != expected:
+        messages = {
+            'single': '未能确认单行钢琴结构，请上传每组只有一行五线谱的乐谱。',
+            'piano': '未能确认钢琴双行结构，请上传上行和下行的两行五线谱。',
+            'vocal': '未能确认上方人声、下方钢琴双行的结构，请换一张三行声乐谱。',
+        }
+        raise RecognitionUncertain(messages[layout])
     measures = [len(p.findall('measure')) for p in parts]
-    limit = sum(page_measures) if page_measures else 16
-    if len(set(measures)) != 1 or not 1 <= measures[0] <= limit:
-        raise UnsupportedScore('声部小节数不一致，或超过试用版的 16 小节限制。')
+    if page_measures is not None and (
+            not 1 <= len(page_measures) <= MAX_PAGES
+            or any(not 1 <= count <= MAX_MEASURES_PER_PAGE for count in page_measures)
+            or sum(page_measures) > MAX_TOTAL_MEASURES):
+        raise UnsupportedScore(f'每页最多 {MAX_MEASURES_PER_PAGE} 小节，全曲最多 {MAX_TOTAL_MEASURES} 小节、{MAX_PAGES} 页。')
+    limit = sum(page_measures) if page_measures else MAX_MEASURES_PER_PAGE
+    if len(set(measures)) != 1:
+        raise UnsupportedScore('声部小节数不一致，暂不能生成连续试听。')
+    if not 1 <= measures[0] <= limit:
+        raise UnsupportedScore(f'小节数超出范围：每页最多 {MAX_MEASURES_PER_PAGE} 小节，全曲最多 {MAX_TOTAL_MEASURES} 小节。')
     if page_measures and measures[0] != sum(page_measures):
-        raise RecognitionUncertain('跨页小节未完整衔接，暂不能生成连续伴奏。')
+        raise RecognitionUncertain(
+            f'跨页小节数量不一致：谱面检测到 {sum(page_measures)} 小节，'
+            f'识别结果导出 {measures[0]} 小节，暂不能生成连续伴奏。'
+            '这是识别结构异常，不代表原谱有误。')
     tempos = {float(e.get('tempo')) for e in root.findall('.//sound') if e.get('tempo')}
     if len(tempos) > 1 or any(not 30 <= bpm <= 220 for bpm in tempos):
         raise UnsupportedScore('暂不支持曲中变速或异常速度标记。')
     bpm = next(iter(tempos), 120)
     notes, lengths, warnings, checks = [], None, [], []
-    roles = ['accompaniment'] if layout == 'piano' else ['melody', 'accompaniment']
     for part, role in zip(parts, roles):
-        events, sizes, issues, part_checks = _part_events(part, role)
+        events, sizes, issues, part_checks = _part_events(part, role, min_fifths, require_closed_ties)
         if not events or (lengths is not None and lengths != sizes):
             raise UnsupportedScore('声部为空或小节无法对齐。')
         lengths = sizes

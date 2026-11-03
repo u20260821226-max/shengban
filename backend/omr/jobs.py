@@ -9,14 +9,14 @@ from threading import RLock
 import time
 from uuid import uuid4
 
-TERMINAL = {'completed', 'failed', 'rejected'}
+TERMINAL = {'completed', 'partial', 'failed', 'rejected'}
 RETENTION_SECONDS = 24 * 60 * 60
 
 
 def pipeline_version():
     folder = Path(__file__).parent
     return sha256(b''.join((folder / name).read_bytes() for name in
-                           ['pipeline.py', 'musicxml.py', 'rhythm.py', 'errors.py', 'pages.py', 'images.py'])).hexdigest()
+                           ['pipeline.py', 'musicxml.py', 'rhythm.py', 'errors.py', 'pages.py', 'images.py', 'layouts.py', 'partial.py'])).hexdigest()
 
 
 class Busy(RuntimeError):

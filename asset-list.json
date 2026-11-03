@@ -72,5 +72,6 @@
   "./assets/visuals/you-yi-zhong-bei-shang-cover.jpg",
   "./assets/visuals/mountain-lake.webp",
   "./assets/visuals/xiao-xing-yun-cover.jpg",
-  "./assets/visuals/ai-yong-zai-cover.jpg"
+  "./assets/visuals/ai-yong-zai-cover.jpg",
+  "./labs/recognition.result.js"
 ]

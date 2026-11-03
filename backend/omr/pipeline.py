@@ -11,9 +11,11 @@ from zipfile import ZipFile
 from PIL import Image, ImageOps, UnidentifiedImageError
 
 from .musicxml import UnsupportedScore, parse_xml, read_mxl, to_song
-from .errors import RecognitionTimeout, RecognitionUncertain
-from .pages import MAX_PAGES, page_for_measure, write_book
+from .errors import RecognitionTimeout, RecognitionUncertain, RecognitionAttemptsFailed
+from .pages import MAX_PAGES, MAX_MEASURES_PER_PAGE, page_for_measure, write_book
 from .images import paper_bounds
+from .layouts import score_layout
+from .partial import checked_prefix, partial_coverage, preceding_pages, label_partial_xml
 
 DEFAULT_BIN = '/Applications/Audiveris.app/Contents/MacOS/Audiveris'
 ATTEMPT_TIMEOUT_SECONDS = 150
@@ -48,7 +50,8 @@ def prepare_image(source, target, retry=False):
         raise UnsupportedScore('图片无法读取，请重新上传完整的 JPG 或 PNG。') from exc
 
 
-def run_attempt(executable, normalized, folder, title, progress, retry=False, page_count=1, layout='vocal'):
+def run_attempt(executable, normalized, folder, title, progress, retry=False, page_count=1, layout='vocal', recovery_deadline=None):
+    expected, _, _ = score_layout(layout)
     destination = folder / ('audiveris-retry' if retry else 'audiveris')
     destination.mkdir()
     stage = '自动重试（第 2 次，最多 2 次）' if retry else '识别音符、节奏与声部'
@@ -60,6 +63,8 @@ def run_attempt(executable, normalized, folder, title, progress, retry=False, pa
                                     '-save', *options, '-output', str(destination), '--', str(normalized)],
                                    stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
         deadline = time.monotonic() + ATTEMPT_TIMEOUT_SECONDS * page_count
+        if recovery_deadline is not None:
+            deadline = min(deadline, recovery_deadline)
         current_page = 1
         try:
             while True:
@@ -83,7 +88,8 @@ def run_attempt(executable, normalized, folder, title, progress, retry=False, pa
             except ProcessLookupError:
                 pass
             process.wait()
-            raise RecognitionTimeout(f'本次识谱超过 {ATTEMPT_TIMEOUT_SECONDS * page_count:g} 秒，任务已停止；请尝试更短的谱面片段。') from exc
+            message = '前段恢复已达到等待上限，任务已停止。' if recovery_deadline is not None else f'本次识谱超过 {ATTEMPT_TIMEOUT_SECONDS * page_count:g} 秒，任务已停止；请尝试更短的谱面片段。'
+            raise RecognitionTimeout(message) from exc
     exports = list(destination.glob('*.mxl'))
     if returncode or len(exports) != 1:
         message = log_path.read_text(errors='replace')
@@ -93,7 +99,7 @@ def run_attempt(executable, normalized, folder, title, progress, retry=False, pa
             seen = re.findall(r'\[normalized(?:-retry)?#(\d+)\]', message)
             page = min(page_count, int(seen[-1])) if seen else 1
             raise RecognitionUncertain(f'第 {page} 页未能完整检测谱表，请更换清晰原图。')
-        raise UnsupportedScore('未能将全部页面识别为同一首曲目，请检查页序、清晰度及三行声部是否一致。' if page_count > 1 else '暂未能完成这张谱图的识别，请换一张清晰、简单的三行声乐谱。')
+        raise UnsupportedScore('未能将全部页面识别为同一首曲目，请检查页序、清晰度及谱型是否一致。' if page_count > 1 else '暂未能完成这张谱图的识别，请换一张清晰、简单且符合所选谱型的乐谱。')
     progress('checking', '正在检查声部、小节与跨页延音线')
     books = list(destination.glob('*.omr'))
     if len(books) != 1:
@@ -106,12 +112,12 @@ def run_attempt(executable, normalized, folder, title, progress, retry=False, pa
                 raise RecognitionUncertain(f'第 {page} 页未能完成识别，不会跳过该页。')
             sheet = parse_xml(book.read(name))
             systems = sheet.findall('page/system')
-            staff_count = 2 if layout == 'piano' else 3
+            staff_count = sum(expected)
             if not systems or any(len(s.findall('part/staff')) != staff_count for s in systems):
                 raise RecognitionUncertain(f'第 {page} 页未识出完整的 {staff_count} 行谱表，请检查谱型或更换该页图片。')
             count = len(sheet.findall('page/system/stack'))
-            if not 1 <= count <= 16:
-                raise UnsupportedScore(f'第 {page} 页超出每页最多 16 小节的试用范围。')
+            if not 1 <= count <= MAX_MEASURES_PER_PAGE:
+                raise UnsupportedScore(f'第 {page} 页超出每页最多 {MAX_MEASURES_PER_PAGE} 小节的试用范围。')
             counts.append(count)
     xml = read_mxl(exports[0])
     try:
@@ -125,7 +131,8 @@ def run_attempt(executable, normalized, folder, title, progress, retry=False, pa
     return xml, song
 
 
-def recognize(source, folder, title, progress=lambda status, message: None, layout='vocal'):
+def _recognize_complete(source, folder, title, progress, layout='vocal', allow_retry=True, recovery_deadline=None, on_attempt=lambda: None):
+    score_layout(layout)
     sources = list(source) if isinstance(source, (list, tuple)) else [source]
     if not 1 <= len(sources) <= MAX_PAGES:
         raise UnsupportedScore('一次最多上传 6 页同一首歌的谱图。')
@@ -152,8 +159,11 @@ def recognize(source, folder, title, progress=lambda status, message: None, layo
     normalized, first_images = prepare()
     attempts = 1
     try:
-        xml, song = run_attempt(executable, normalized, folder, title, progress, page_count=len(sources), layout=layout)
+        on_attempt()
+        xml, song = run_attempt(executable, normalized, folder, title, progress, page_count=len(sources), layout=layout, recovery_deadline=recovery_deadline)
     except RecognitionUncertain as initial:
+        if not allow_retry:
+            raise
         progress('preparing', '首次结果存在结构或节拍疑点，正在调整图片尺度并自动重试一次')
         retry_image, retry_images = prepare(retry=True)
         sizes = []
@@ -163,8 +173,63 @@ def recognize(source, folder, title, progress=lambda status, message: None, layo
         if all(sizes):
             raise initial
         attempts = 2
-        xml, song = run_attempt(executable, retry_image, folder, title, progress, retry=True, page_count=len(sources), layout=layout)
+        on_attempt()
+        try:
+            xml, song = run_attempt(executable, retry_image, folder, title, progress, retry=True, page_count=len(sources), layout=layout, recovery_deadline=recovery_deadline)
+        except RecognitionUncertain as retry_error:
+            raise RecognitionAttemptsFailed(initial, retry_error) from retry_error
     song['processing'] = {'attempts': attempts, 'pages': len(sources), 'croppedPages': sorted(cropped)}
     (folder / 'score.musicxml').write_bytes(xml)
     (folder / 'song.json').write_text(json.dumps(song, ensure_ascii=False))
     return song
+
+
+def recognize(source, folder, title, progress=lambda status, message: None, layout='vocal'):
+    """Try the full score first, then at most two bounded prefix recognition runs."""
+    sources = list(source) if isinstance(source, (list, tuple)) else [source]
+    score_layout(layout)
+    engine_attempts = 0
+    def record_attempt():
+        nonlocal engine_attempts
+        engine_attempts += 1
+    try:
+        return _recognize_complete(sources, folder, title, progress, layout, on_attempt=record_attempt)
+    except (UnsupportedScore, RecognitionTimeout) as original_error:
+        if len(sources) < 2 or len(sources) > MAX_PAGES:
+            raise
+        count = preceding_pages(original_error, len(sources))
+        # A first-page failure has no prefix. Extra runs share one total budget.
+        deadline = time.monotonic() + ATTEMPT_TIMEOUT_SECONDS * (len(sources) - 1)
+        error = original_error
+        for attempt in range(1, 3):
+            if count < 1 or time.monotonic() >= deadline:
+                break
+            progress('recovering', f'完整生成未成功，正在尝试保留前 {count} / {len(sources)} 页（恢复 {attempt}/2）')
+            recovery = folder / f'prefix-{attempt}'
+            recovery.mkdir()
+            try:
+                def report(stage, message):
+                    progress('recovering', f'正在恢复前 {count} / {len(sources)} 页：{message}')
+                candidate = _recognize_complete(sources[:count], recovery, title, report, layout,
+                                                 allow_retry=False, recovery_deadline=deadline, on_attempt=record_attempt)
+                xml, song, included = checked_prefix((recovery / 'score.musicxml').read_bytes(),
+                                                     candidate, title, layout)
+            except (UnsupportedScore, RecognitionTimeout) as prefix_error:
+                error = prefix_error
+                count = preceding_pages(prefix_error, count)
+                continue
+            boundary = '为避免截断延音线或保留异常页面，结果已进一步缩短。' if included < count else None
+            reason = str(original_error)
+            if error is not original_error:
+                reason += f' 前段恢复检查：{error}'
+            partial_coverage(song, len(sources), included, reason, boundary)
+            xml = label_partial_xml(xml, included, len(sources))
+            song['processing']['pages'] = len(sources)
+            song['processing']['attempts'] = engine_attempts or song['processing']['attempts']
+            song['processing']['recoveryAttempts'] = attempt
+            (folder / 'score.musicxml').write_bytes(xml)
+            (folder / 'song.json').write_text(json.dumps(song, ensure_ascii=False))
+            return song
+        if error is original_error:
+            raise original_error
+        raise type(original_error)(f'{original_error} 未能保留可用的连续前段：{error}') from original_error

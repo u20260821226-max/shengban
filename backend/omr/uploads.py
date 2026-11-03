@@ -3,10 +3,10 @@ from email import policy
 from email.parser import BytesParser
 
 from .pdf_input import PDFInputError, render_pdf
+from .layouts import LAYOUTS
 
 MAX_IMAGE = 10 * 1024 * 1024
 MAX_REQUEST = 64 * 1024 * 1024
-LAYOUTS = {'vocal', 'piano'}
 
 
 class UploadError(ValueError):
@@ -45,7 +45,7 @@ def decode_upload(raw, content_type):
             try:
                 layout = payload.decode('ascii')
             except UnicodeError:
-                raise UploadError('请选择两行钢琴谱或三行声乐谱。')
+                raise UploadError('请选择单行钢琴谱、两行钢琴谱或三行声乐谱。')
             seen_layout = True
         elif name == 'images' and part.get_content_type() == 'application/pdf' and pdf is None:
             if not payload or len(payload) > MAX_IMAGE:
@@ -61,7 +61,7 @@ def decode_upload(raw, content_type):
         if images:
             raise UploadError('PDF 和图片请分开提交；一次选择一份 PDF 或 1 至 6 张图片。')
         if layout not in LAYOUTS:
-            raise UploadError('请选择两行钢琴谱或三行声乐谱。')
+            raise UploadError('请选择单行钢琴谱、两行钢琴谱或三行声乐谱。')
         try:
             images = render_pdf(pdf)
         except PDFInputError as error:

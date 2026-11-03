@@ -170,7 +170,7 @@ $$('[data-import]').forEach(button => button.addEventListener('click', () => $('
 $$('[data-layout-choice]').forEach(button => button.addEventListener('click', () => {
   $('#import-dialog').close(); openRecognition(button.dataset.layoutChoice);
 }));
-if (/^#upload-(piano|vocal)$/.test(location.hash)) openRecognition(location.hash.slice(8));
+if (/^#upload-(single|piano|vocal)$/.test(location.hash)) openRecognition(location.hash.slice(8));
 $('#score-expand').addEventListener('click', () => {
   const expanded = $('.score-paper').classList.toggle('is-expanded');
   $('#score-expand').setAttribute('aria-expanded', String(expanded));

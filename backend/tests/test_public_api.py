@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 
 from backend.public_api import create_app, MAX_UPLOAD
 from backend.public_limits import owner_digest
+from backend.omr.errors import RecognitionAttemptsFailed, RecognitionUncertain
 
 A = {'X-Recognition-Token': 'a' * 64, 'Content-Type': 'image/png'}
 B = {'X-Recognition-Token': 'b' * 64, 'Content-Type': 'image/png'}
@@ -101,3 +102,19 @@ class PublicTests(unittest.TestCase):
             key, _ = store.submit(str(i).encode(), owner=owner_digest('c' * 64))
             store.update(key, status='rejected')
         self.assertEqual(self.submit().status_code, 429)
+
+    def test_combined_recognition_failure_reaches_user_as_specific_rejection(self):
+        failure = RecognitionAttemptsFailed(RecognitionUncertain('跨页小节未完整衔接'),
+                                            RecognitionUncertain('第 1 页：第 4 小节识别结果未读出钢琴下行'))
+        def rejected(*args):
+            raise failure
+        with TestClient(create_app(self.root / 'rejected', rejected)) as client:
+            key = client.post('/api/recognition', headers=A, content=b'image').json()['id']
+            for _ in range(100):
+                result = client.get('/api/recognition/' + key, headers=A).json()
+                if result['status'] in {'rejected', 'failed'}:
+                    break
+                time.sleep(.01)
+            self.assertEqual(result['status'], 'rejected')
+            self.assertIn('第 4 小节识别结果未读出钢琴下行', result['message'])
+            self.assertNotIn('简单谱图', result['message'])

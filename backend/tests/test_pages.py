@@ -15,6 +15,39 @@ from test_recognition import score, note
 
 
 class PageTests(unittest.TestCase):
+    @staticmethod
+    def long_score(count):
+        root = E.fromstring(score())
+        for part in root.findall('part'):
+            for number in range(2, count + 1):
+                measure = E.fromstring(E.tostring(part[0]))
+                measure.set('number', str(number))
+                measure.remove(measure.find('attributes'))
+                part.append(measure)
+        return E.tostring(root)
+
+    def test_sixty_four_measures_on_one_page_are_playable(self):
+        result = to_song(self.long_score(64), 'long page')
+        self.assertEqual(result['measures'], 64)
+        self.assertEqual(len(result['notes']), 192)
+        self.assertEqual(result['duration'], 128)
+
+    def test_six_pages_with_384_measures_keep_continuous_timing(self):
+        result = to_song(self.long_score(384), 'long song', page_measures=[64] * 6)
+        self.assertEqual(result['measures'], 384)
+        self.assertEqual(len(result['notes']), 1152)
+        self.assertEqual(result['measureTimes'][-1], 766)
+        self.assertEqual(result['duration'], 768)
+
+    def test_single_page_over_new_limit_is_rejected(self):
+        with self.assertRaisesRegex(UnsupportedScore, '64'):
+            to_song(self.long_score(65), 'too long')
+
+    def test_each_page_and_total_page_count_remain_bounded(self):
+        for counts in ([65, 1], [64] * 7, [], [0, 1], [-1, 2]):
+            with self.subTest(counts=counts), self.assertRaisesRegex(UnsupportedScore, '384'):
+                to_song(score(), 'invalid counts', page_measures=counts)
+
     def test_two_staff_piano_plays_both_hands_without_melody(self):
         root = E.fromstring(score())
         root.remove(root.findall('part')[0])
@@ -38,7 +71,7 @@ class PageTests(unittest.TestCase):
         self.assertEqual(song['duration'], 4)
 
     def test_page_loss_is_rejected(self):
-        with self.assertRaisesRegex(UnsupportedScore, '跨页'):
+        with self.assertRaisesRegex(UnsupportedScore, '跨页.*检测到 2 小节.*导出 1 小节'):
             to_song(score(), 'lost page', page_measures=[1, 1])
 
     def test_six_pages_preserve_measure_order(self):

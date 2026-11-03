@@ -24,7 +24,8 @@ WORKER = ThreadPoolExecutor(max_workers=1)
 MAX_UPLOAD = MAX_REQUEST
 JOB_PATH = re.compile(r'/api/recognition/([a-f0-9]{32})(/score.musicxml)?$')
 STATIC = {'/labs/recognition.html', '/labs/recognition.css', '/labs/recognition.js',
-          '/labs/recognition.task.js',
+          '/labs/recognition.task.js', '/labs/recognition.waiting.js', '/labs/recognition.result.js',
+          '/motion.js', '/motion.css', '/theme.css', '/mist.css',
           '/labs/recognition.pages.js',
           '/music-player.js', '/score-view.js', '/icon.svg', '/styles.css',
           '/vendor/opensheetmusicdisplay.min.js'}
@@ -37,7 +38,9 @@ def process(job_id, folder):
         source = folder / 'source' if count == 1 else [folder / f'page-{i:02d}.source' for i in range(1, count + 1)]
         song = recognize(source, folder, '上传乐谱',
                          lambda status, message: STORE.update(job_id, status=status, message=message), layout=data.get('layout', 'vocal'))
-        STORE.update(job_id, status='completed', message='试听已生成，请检查效果', song=song,
+        partial = song.get('coverage', {}).get('complete') is False
+        STORE.update(job_id, status='partial' if partial else 'completed',
+               message=song['coverage']['message'] if partial else '试听已生成，请检查效果', song=song,
                scoreUrl=f'/api/recognition/{job_id}/score.musicxml')
     except UnsupportedScore as exc:
         STORE.update(job_id, status='rejected', message=str(exc))
@@ -79,7 +82,7 @@ class Handler(SimpleHTTPRequestHandler):
             if not result:
                 return self.reply(404, {'message': '任务不存在或已过期，请重新上传'})
             if match[2]:
-                if result['status'] != 'completed':
+                if result['status'] not in {'completed', 'partial'}:
                     return self.reply(409, {'message': '乐谱尚未生成'})
                 data = (STORAGE / match[1] / 'score.musicxml').read_bytes()
                 self.send_response(200)

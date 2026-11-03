@@ -22,13 +22,13 @@ export async function requestScore(url) {
 }
 
 export function rememberTask(id, layout = 'vocal') {
-  const key = layout === 'piano' ? STORAGE_KEY + '.piano' : STORAGE_KEY;
+  const key = layout === 'vocal' ? STORAGE_KEY : `${STORAGE_KEY}.${layout}`;
   try { id ? localStorage.setItem(key, id) : localStorage.removeItem(key); } catch {}
 }
 
 export function lastTask(layout = 'vocal') {
   try {
-    const id = localStorage.getItem(layout === 'piano' ? STORAGE_KEY + '.piano' : STORAGE_KEY);
+    const id = localStorage.getItem(layout === 'vocal' ? STORAGE_KEY : `${STORAGE_KEY}.${layout}`);
     return /^[a-f0-9]{32}$/.test(id || '') ? id : null;
   } catch { return null; }
 }
@@ -61,7 +61,7 @@ export async function watchTask(id, onUpdate) {
     let result;
     try {
       result = await requestJson(`/api/recognition/${id}`);
-      deadline = started + Math.max(360000, Math.min(6, result.pageCount || 1) * 330000 + 60000);
+      deadline = started + Math.max(360000, Math.min(6, result.pageCount || 1) * 450000 + 60000);
       networkFailures = 0;
     } catch (error) {
       if (error.resumable && ++networkFailures < 4) {
@@ -72,7 +72,7 @@ export async function watchTask(id, onUpdate) {
       throw error;
     }
     onUpdate(result);
-    if (result.status === 'completed') return result;
+    if (['completed', 'partial'].includes(result.status)) return result;
     if (['failed', 'rejected'].includes(result.status)) throw new Error(result.message);
     await new Promise(resolve => setTimeout(resolve, 900));
   }

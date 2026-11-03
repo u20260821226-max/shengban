@@ -6,6 +6,8 @@ from PIL import Image
 from .errors import UnsupportedScore
 
 MAX_PAGES = 6
+MAX_MEASURES_PER_PAGE = 64
+MAX_TOTAL_MEASURES = MAX_PAGES * MAX_MEASURES_PER_PAGE
 
 
 def write_book(images, target):

@@ -87,7 +87,7 @@ class RhythmTests(unittest.TestCase):
         left = (note(2, staff=2, voice='5') + '<backup><duration>2</duration></backup>'
                 '<forward><duration>2</duration><voice>7</voice><staff>2</staff></forward>'
                 + note(1, staff=2, voice='7'))
-        with self.assertRaisesRegex(UnsupportedScore, '钢琴左手.*缺 1 拍'):
+        with self.assertRaisesRegex(UnsupportedScore, '钢琴下行.*缺 1 拍'):
             to_song(score(left=left), 'test')
 
     def test_wrong_staff_structure_rejected(self):

@@ -11,8 +11,11 @@ def main():
     source = DIST / '声伴-代码提交包.zip'
     target = DIST / '声伴-本次更新'
     with ZipFile(source) as bundle:
+        # Include the new visual assets; original score/audio/vendor assets stay in the repository.
         names = [name for name in bundle.namelist()
-                 if not name.startswith(('assets/', 'vendor/')) and not Path(name).name.startswith('.')]
+                 if (not name.startswith(('assets/', 'vendor/'))
+                     or name.startswith('assets/visuals/') or name == 'assets/ATTRIBUTION.md')
+                 and not Path(name).name.startswith('.')]
         if len(names) > 100:
             raise ValueError('网页上传文件数超过 100，应拆分提交')
         for name in names:
